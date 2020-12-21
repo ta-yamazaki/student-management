@@ -67,3 +67,6 @@ node_modules/
 
 # IntelliJ IDEA setting
 .idea/
+
+# Firestore data created by Local Emulate
+.saved-data

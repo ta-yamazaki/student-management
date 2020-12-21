@@ -26,8 +26,6 @@ var data;
         .then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
                 data = doc.data();
-                console.log("data2");
-                console.log(data);
              });
                  res.render("index.ejs", data);
         })
