@@ -5,9 +5,15 @@ services:
     build: .
     container_name: firebase
     ports:
-      - 9005:9005
+      - 5000:5000
+      - 4000:4000
+      - 5001:5001
+      - 8080:8080
+      - 4400:4400
+      - 4500:4500
+    environment:
+      - HOST=localhost
     volumes:
       - ./:/app
     tty: true
     stdin_open: true
-    command: /bin/sh

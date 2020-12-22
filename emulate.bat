@@ -1,1 +1,0 @@
-firebase emulators:start --import=./.saved-data --export-on-exit

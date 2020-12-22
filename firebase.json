@@ -17,19 +17,22 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-
-  // Optional emulator configuration. Default
-  // values are used if absent.
   "emulators": {
     "ui": {
-      "enabled": true,      // Default is `true`
-      "port": 4000          // If unspecified, see CLI log for selected port
+      "port": "4000",
+      "host": "localhost"
     },
     "firestore": {
-      "port": "8080"
+      "port": "8080",
+      "host": "localhost"
     },
     "functions": {
-      "port": "5001"
+      "port": "5001",
+      "host": "localhost"
+    },
+    "hosting": {
+      "port": "5000",
+      "host": "localhost"
     }
   }
 }
