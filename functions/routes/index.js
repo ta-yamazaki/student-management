@@ -1,50 +1,42 @@
-var router = require('express').Router();
+const router = require('express').Router();
 
 const admin = require('firebase-admin');
 const ServiceAccount = require('../ServiceAccount.json');
 admin.initializeApp({ credential: admin.credential.cert(ServiceAccount) });
 const db = admin.firestore();
 
-const docRef = db.collection('users').doc('alovelace');
-//db.collection('users').add({
-//  id: 1,
-//  title: 'Node.js Test',
-//  items: [
-//      { name: "<h1>リンゴ</h1>" },
-//      { name: "<h2>バナナ</h2>" },
-//      { name: "<h3>スイカ</h3>" }
-//  ]
-//});
+const ViewVariable = require('../model/ViewVariable.js');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
 
-var data;
-
-    db.collection("users").where("id", "==", 1)
-        .get()
-        .then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                data = doc.data();
-             });
-                 res.render("index.ejs", data);
-        })
-        .catch(function(error) {
-            console.log(`データの取得に失敗しました (${error})`);
+    var newcomers = [];
+    db.collection("newcomers").get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            newcomers.push(doc.data());
         });
 
-//    var data = {
-//        title: 'Node.js Test',
-//        items: [
-//            { name: "<h1>リンゴ</h1>" },
-//            { name: "<h2>バナナ</h2>" },
-//            { name: "<h3>スイカ</h3>" }
-//        ]
-//    };
-//                 console.log("data");
-//                 console.log(data);
-//   // レンダリングを行う
-//    res.render("index.ejs", data);
+        var viewVariable = new ViewVariable();
+        viewVariable.put("newcomers", newcomers);
+        viewVariable.put("title", "new Firebase");
+        res.render("index.ejs", viewVariable.getData);
+    }).finally(function() {
+    });
+
+
+
+
+//    db.collection("users").where("id", "==", 1)
+//        .get()
+//        .then(function(querySnapshot) {
+//            querySnapshot.forEach(function(doc) {
+//                var data = doc.data();
+//             });
+//                 res.render("index.ejs", data);
+//        })
+//        .catch(function(error) {
+//            console.log(`データの取得に失敗しました (${error})`);
+//        });
 });
 
 
