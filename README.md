@@ -5,8 +5,14 @@
 ```
 docker-compose build && docker-compose up -d
 ```
+
+コンテナに入る
 ```
-firebase login --no-localhost
+docker exec -it firebase sh
+```
+firebaseにログイン。ルート(/app)で
+```
+npm run nodeAndLogin
 ```
 ※リンクが生成されるのでアクセスしてGoogleにログイン<br>
 ログイン後表示されるコードをターミナルに張り付け<br>
@@ -14,9 +20,9 @@ firebase login --no-localhost
 
 
 ### ローカル環境でのエミュレート
-プロジェクトルートで
+コンテナシェル内、ルート(/app)で
 ```
-emulate
+npm run emulate
 ```
 http://localhost:5000
 にアクセス
