@@ -2,12 +2,11 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "scripts": {
-    "serve": "firebase emulators:start --only functions",
-    "shell": "firebase functions:shell",
+    "serve": "firebase emulators:start --only functions --token ${FIREBASE_TOKEN}",
+    "shell": "firebase functions:shell --token ${FIREBASE_TOKEN}",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
-    "nodeAndLogin": "npm install --save && firebase login --no-localhost"
+    "deploy": "firebase deploy --only functions --token ${FIREBASE_TOKEN}",
+    "logs": "firebase functions:log --token ${FIREBASE_TOKEN}"
   },
   "engines": {
     "node": "12"

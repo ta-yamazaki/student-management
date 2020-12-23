@@ -2,7 +2,6 @@
   "name": "firebase",
   "description": "Firebase",
   "scripts": {
-    "nodeAndLogin": "npm --prefix ./functions install ./functions --save && firebase login --no-localhost",
-    "emulate": "firebase emulators:start --import=./.saved-data --export-on-exit"
+    "emulate": "firebase emulators:start --import=./.saved-data --export-on-exit --token ${FIREBASE_TOKEN}"
   }
 }

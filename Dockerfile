@@ -8,3 +8,15 @@ RUN apk update && \
     && rm -rf /var/lib/apt/lists/*
 
 RUN apk add --update openjdk11
+
+WORKDIR /app/functions
+
+COPY package*.json ./
+
+WORKDIR /app
+
+CMD npm install \
+  && firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN} \
+  && npm run emulate
+
+EXPOSE 4000 5000 5001 8080

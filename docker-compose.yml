@@ -1,17 +1,21 @@
 version: '3'
 
+volumes:
+  firebase-node_modules:
+
 services:
   app:
     build: .
     container_name: firebase
     volumes:
       - ./:/app
+      - firebase-node_modules:/app/functions/node_modules
     ports:
-      - "8000:8000"
       - "4000:4000" # Emulator Suite UI
       - "5000:5000" # Firebase Hosting
       - "5001:5001" # Clound Functions
-      - "9000:9000" # Realtime Database
       - "8080:8080" # Cloud Firestore
-      - "8085:8085" # Cloud Pub/Sub
     tty: true
+    environment:
+      - FIREBASE_PROJECT=nc-management
+      - FIREBASE_TOKEN=1//0e5KJ947lOvYpCgYIARAAGA4SNwF-L9Ir_Uxb6Eqw9-i-o-MmrP870uO8tMWJk9N3vF54n0UaARtDq2F0lGXI3HKAqLMig9ASc5c
