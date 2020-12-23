@@ -13,10 +13,15 @@ WORKDIR /app/functions
 
 COPY package*.json ./
 
-WORKDIR /app
+RUN rm -rf node_modules && \
+    rm package-lock.json && \
+    npm cache clear --force && \
+    npm cache clean --force && \
+    npm i
+CMD npm install
 
-CMD npm install \
-  && firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN} \
+WORKDIR /app
+CMD firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN} \
   && npm run emulate
 
 EXPOSE 4000 5000 5001 8080
