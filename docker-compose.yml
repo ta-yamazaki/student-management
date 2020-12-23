@@ -4,16 +4,14 @@ services:
   app:
     build: .
     container_name: firebase
-    ports:
-      - 5000:5000
-      - 4000:4000
-      - 5001:5001
-      - 8080:8080
-      - 4400:4400
-      - 4500:4500
-    environment:
-      - HOST=localhost
     volumes:
       - ./:/app
+    ports:
+      - "8000:8000"
+      - "4000:4000" # Emulator Suite UI
+      - "5000:5000" # Firebase Hosting
+      - "5001:5001" # Clound Functions
+      - "9000:9000" # Realtime Database
+      - "8080:8080" # Cloud Firestore
+      - "8085:8085" # Cloud Pub/Sub
     tty: true
-    stdin_open: true
