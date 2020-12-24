@@ -10,13 +10,10 @@ RUN apk update && \
 RUN apk add --update openjdk11
 
 WORKDIR /app/functions
-
 COPY package*.json ./
+CMD npm install
 
 WORKDIR /app
-
-CMD npm install \
-  && firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN} \
-  && npm run emulate
+CMD npm run use && npm run emulate
 
 EXPOSE 4000 5000 5001 8080

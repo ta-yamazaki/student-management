@@ -18,7 +18,7 @@ router.get('/', function(req, res, next) {
 
         var viewVariable = new ViewVariable();
         viewVariable.put("newcomers", newcomers);
-        viewVariable.put("title", "new Firebase");
+        viewVariable.put("title", "new Firebase2");
         res.render("index.ejs", viewVariable.getData);
     }).finally(function() {
     });

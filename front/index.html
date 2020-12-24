@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+<h3>Hello express with Firebase</h3>
+<h5>Functions</h5>
+<ul>
+  <% for (let newcomer of newcomers) { %>
+  <li><%- newcomer.name %></li>
+  <% } %>
+</ul>
+<br>
+<h5>Vue.js and Vuetify</h5>
+<div id="app">
+  <v-app>
+    <v-main>
+      <v-container>
+        <h1>{{ message }}</h1>
+        <input v-model='message'>
+      </v-container>
+    </v-main>
+  </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify(),
+    data: {
+      message: 'Hello Vue.js!'
+    }
+  })
+</script>
+</body>
+</html>
