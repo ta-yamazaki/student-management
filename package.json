@@ -4,5 +4,8 @@
   "scripts": {
     "use": "firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN}",
     "emulate": "firebase emulators:start --import=./.saved-data --export-on-exit --token ${FIREBASE_TOKEN}"
+  },
+  "dependencies": {
+    "axios": "^0.21.1"
   }
 }

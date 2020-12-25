@@ -1,82 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">-->
-  <!--  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">-->
-  <!--  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">-->
-  <link rel="stylesheet" href="src/dist/vuetify.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <!--    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="src/dist/vuetify.min.css">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <style>
-  [v-cloak] {
-    visibility: hidden;
-  }
+    [v-cloak] {
+        visibility: hidden;
+    }
+
+    #ncDataTable td.v-data-table__mobile-row:last-child::after {
+        content: '\3E';
+        color: gray;
+    }
+
 </style>
 
 <body>
-<br>
-<h5>Vue.js and Vuetify</h5>
-<a href="test.html">test link</a>
-<div id="app">
-  <v-app>
-    <v-main>
-
-<!--      <v-container>-->
-<!--        <h1 v-cloak>{{ message }}</h1>-->
-<!--        <h1>Hello Vue.js!</h1>-->
-<!--        <input v-model='message' v-cloak>-->
-<!--      </v-container>-->
-      <v-container>
-        <router-link to="/nc/list">命一覧</router-link>
-        <router-link to="/nc/detail">命詳細</router-link>
-        <router-view>(ここにコンテンツが表示される)</router-view>
-      </v-container>
-
-    </v-main>
-  </v-app>
+<!--<a href="/api/test">test link</a>-->
+<div id="app" v-cloak>
+    <br v-if="!$vuetify.breakpoint.xs">
+    <v-app>
+        <v-main>
+            <!--            <v-container>-->
+            <!--                <router-link to="/">命一覧</router-link>-->
+            <!--                <router-link to="/nc/detail">命詳細</router-link>-->
+            <!--            </v-container>-->
+            <router-view>(ここにコンテンツが表示される)</router-view>
+        </v-main>
+    </v-app>
 </div>
-
-
-<div id="example3">
-
-</div>
-
 
 <script type="text/javascript" src="src/dist/vue.js"></script>
 <!--<script type="text/javascript" src="src/dist/vue.min.js"></script>-->
 <script type="text/javascript" src="src/dist/vuetify.js"></script>
 <!--<script type="text/javascript" src="src/dist/vuetify.min.js"></script>-->
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
-<script type="module" src="component/my-component.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script type="module" src="routes/routes.js"></script>
 <script type="module">
 
-import ncListPage from "./component/my-component.js";
-
-    var ncDetailPage = '<div>/nc/detailを表示</div>';
-
-
-    var router = new VueRouter({
-        mode: "history",
-        routes: [
-            {
-                path: "/nc/list",
-                component: ncListPage
-            },
-            {
-                path: "/nc/detail",
-                component: {
-                    template: ncDetailPage
-                }
-            }
-        ]
-    });
-    // routerをマウント
-    new Vue({
-        el: '#app',
-        vuetify: new Vuetify(),
-        router: router
-    })
 
 </script>
 </body>

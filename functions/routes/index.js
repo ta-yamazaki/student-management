@@ -7,14 +7,33 @@ const db = admin.firestore();
 
 const ViewVariable = require('../model/ViewVariable.js');
 
+const ncList = [
+    {
+        id: 1,
+        avatar: 'https://cdn.vuetifyjs.com/images/lists/1.jpg',
+        name: 'たろう',
+        belongs: '○○大学2年',
+        memo: "",
+    },
+    {
+        id: 2,
+        avatar: 'https://cdn.vuetifyjs.com/images/lists/2.jpg',
+        name: 'じろう',
+        belongs: '社会人',
+        memo: "<span class='text--primary'>to Alex, Scott, Jennifer</span>",
+    },
+    {
+        id: 3,
+        avatar: 'https://cdn.vuetifyjs.com/images/lists/3.jpg',
+        name: 'けん',
+        belongs: '◇◇高校3年',
+        memo: "<span class='text--primary'>Sandra Adams</span> &mdash; Do you have Paris recommendations? Have you ever been?",
+    },
+];
+
+
 /* GET home page. */
-router.get('/test', function(req, res, next) {
-
-
-      res.send(__dirname + "aaa");
-
-//      res.sendFile("/app/front/index.html");
-
+router.get('/nc/list', function(req, res, next) {
 
 //    var newcomers = [];
 //    db.collection("newcomers").get().then(function(querySnapshot) {
@@ -29,37 +48,21 @@ router.get('/test', function(req, res, next) {
 //    }).finally(function() {
 //    });
 
-
-
-
-//    db.collection("users").where("id", "==", 1)
-//        .get()
-//        .then(function(querySnapshot) {
-//            querySnapshot.forEach(function(doc) {
-//                var data = doc.data();
-//             });
-//                 res.render("index.ejs", data);
-//        })
-//        .catch(function(error) {
-//            console.log(`データの取得に失敗しました (${error})`);
-//        });
+      res.send(ncList);
 });
 
 
-router.get('/2', function(req, res, next) {
+router.get('/nc/detail/:id', function(req, res, next) {
 
-    var data2 = db.collection("users").where("id", "==", 2).get().data();
+//    var data2 = db.collection("users").where("id", "==", 2).get().data();
 
-//    var data = {
-//        title: 'Node.js Test2',
-//        items: [
-//            { name: "<h1>リンゴ2</h1>" },
-//            { name: "<h2>バナナ2</h2>" },
-//            { name: "<h3>スイカ2</h3>" }
-//        ]
-//    };
-    // レンダリングを行う
-    res.render("index.ejs", data2);
+
+    const ncId = req.params.id;
+    ncList.forEach(function(nc) {
+        if (nc.id == ncId) res.send(nc);
+    });
+
+    throw Error("NC情報が見つかりません: ID = " + id);
 });
 
 module.exports = router;
