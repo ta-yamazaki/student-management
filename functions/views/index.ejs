@@ -6,10 +6,30 @@
 </head>
 <body>
 <h3>Hello express with Firebase</h3>
+<h5>Hello express with Firebase</h5>
 <ul>
   <% for (let newcomer of newcomers) { %>
   <li><%- newcomer.name %></li>
   <% } %>
 </ul>
+
+<div>aaaaaa</div>
+
+<div id="app">
+  <h1>{{ message }}</h1>
+  <input v-model='message'>
+  <%- title2 %>
+</div>
+
+<!-- vue.js読み込み-->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      message: 'Hello Vue.js!'
+    }
+  })
+</script>
 </body>
 </html>

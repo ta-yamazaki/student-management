@@ -8,20 +8,26 @@ const db = admin.firestore();
 const ViewVariable = require('../model/ViewVariable.js');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/test', function(req, res, next) {
 
-    var newcomers = [];
-    db.collection("newcomers").get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-            newcomers.push(doc.data());
-        });
 
-        var viewVariable = new ViewVariable();
-        viewVariable.put("newcomers", newcomers);
-        viewVariable.put("title", "new Firebase2");
-        res.render("index.ejs", viewVariable.getData);
-    }).finally(function() {
-    });
+      res.send(__dirname + "aaa");
+
+//      res.sendFile("/app/front/index.html");
+
+
+//    var newcomers = [];
+//    db.collection("newcomers").get().then(function(querySnapshot) {
+//        querySnapshot.forEach(function(doc) {
+//            newcomers.push(doc.data());
+//        });
+//
+//        var viewVariable = new ViewVariable();
+//        viewVariable.put("newcomers", newcomers);
+//        viewVariable.put("title", "new Firebase2");
+//        res.render("index.ejs", viewVariable.getData);
+//    }).finally(function() {
+//    });
 
 
 
