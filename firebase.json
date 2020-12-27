@@ -3,7 +3,7 @@
     "public": "front",
     "rewrites": [
       {
-        "source": "api/**",
+        "source": "/api/**",
         "function": "app"
       }, {
         "source": "**",

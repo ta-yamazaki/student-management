@@ -13,24 +13,35 @@
         visibility: hidden;
     }
 
-    #ncDataTable td.v-data-table__mobile-row:last-child::after {
-        content: '\3E';
-        color: gray;
+    .v-input--selection-controls__input > .v-icon {
+        font-size: large;
     }
 
+    .v-label {
+        font-size: 14px;
+    }
 </style>
 
 <body>
 <!--<a href="/api/test">test link</a>-->
 <div id="app" v-cloak>
-    <br v-if="!$vuetify.breakpoint.xs">
+    <br>
     <v-app>
         <v-main>
-            <!--            <v-container>-->
-            <!--                <router-link to="/">命一覧</router-link>-->
-            <!--                <router-link to="/nc/detail">命詳細</router-link>-->
-            <!--            </v-container>-->
-            <router-view>(ここにコンテンツが表示される)</router-view>
+            <v-container>
+
+                <v-row align="center">
+
+                    <!--                        <router-link to="/">命一覧</router-link>-->
+                    <!--                        <router-link to="/nc/detail">命詳細</router-link>-->
+
+                    <router-view>
+                        (ここにコンテンツが表示される)
+                    </router-view>
+
+                </v-row>
+
+            </v-container>
         </v-main>
     </v-app>
 </div>
@@ -39,8 +50,8 @@
 <!--<script type="text/javascript" src="src/dist/vue.min.js"></script>-->
 <script type="text/javascript" src="src/dist/vuetify.js"></script>
 <!--<script type="text/javascript" src="src/dist/vuetify.min.js"></script>-->
-<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 
 <script type="module" src="routes/routes.js"></script>
 <script type="module">
