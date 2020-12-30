@@ -321,7 +321,6 @@ var ncDetail = {
     methods: {
         updateSuccess() {
             this.updateNcSuccess = true;
-            setTimeout(() => (this.updateNcSuccess = false), 1100);
         },
     },
     watch: {
@@ -352,16 +351,14 @@ var ncDetail = {
                 </v-app-bar>
             </v-list>
 
-               <v-alert
-                    style="position: fixed; z-index: 9999;"
-                    type="success"
-                    v-show="updateNcSuccess"
-                    elevation="5"
-                    transition="fade-transition"
-                    width="100%"
-                >
-                  更新しました。
-                </v-alert>
+            <v-snackbar
+                v-model="updateNcSuccess"
+                color="success"
+                top
+                timeout="1800"
+            >
+                更新しました。
+            </v-snackbar>
 
            <v-card-text>
                 <v-tabs-items v-model="tab">

@@ -86,7 +86,7 @@ Vue.component('register-nc', {
               transition="dialog-bottom-transition"
             >
               <template v-slot:activator="{ on, attrs }">
-                  <v-footer fixed color="transparent">
+                  <v-footer fixed color="transparent" class="px-2 py-2">
                       <v-spacer></v-spacer>
                       <v-btn
                         color="info"
@@ -162,9 +162,8 @@ Vue.component('register-nc', {
                       v-model="profile.memo"
                       label="メモ"
                       placeholder="興味関心、家族関係 etc."
-                      rows="2"
+                      rows="3"
                       counter="1000"
-                      class="mt-0 pt-0"
                       auto-grow clearable
                     ></v-textarea>
                   </v-col>
@@ -189,6 +188,8 @@ var ncList = {
         twoLine: true,
         avatar: true,
         registerNcSuccess: false,
+        visibleItemId: "",
+        overlay: false,
       }
     },
     created() {
@@ -218,14 +219,49 @@ var ncList = {
         iconText(name) {
             return name.charAt(0);
         },
+        archiveShow(ncId) {
+            this.visibleItemId = ncId;
+            this.overlay = true;
+        },
+        archiveHide() {
+            this.visibleItemId = "";
+        },
+        overlayHide() {
+            this.overlay = false;
+            this.archiveHide();
+        },
+        archive(ncId) {
+            this.archiveHide();
+            console.log("archived");
+//            var archiveButton = document.getElementById("archiveButton-" + ncId);
+//            archiveButton.style.visibility ="hidden";
+        },
+        isArchiveVisible(ncId) {
+            return this.visibleItemId == ncId;
+        },
         success() {
             this.registerNcSuccess = true;
             this.getNcList();
-            setTimeout(() => (this.registerNcSuccess = false), 1100);
+        },
+        logout() {
+            firebase.auth().signOut().then(()=>{
+              console.log("ログアウトしました");
+            })
+            .catch( (error)=>{
+              console.log(`ログアウト時にエラーが発生しました (${error})`);
+            });
         },
     },
     template: `
         <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto">
+            <v-overlay
+                :value="overlay"
+                opacity="0"
+                z-index="7000"
+                absolute
+                v-touch="{ end: () => overlayHide() }"
+            >
+            </v-overlay>
             <v-list>
                 <v-app-bar
                     dense fixed
@@ -236,35 +272,69 @@ var ncList = {
                     <v-toolbar-title>{{ pageTitle }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-spacer></v-spacer>
+                    <v-col cols="6">
                      <v-text-field
                          v-model="search"
                          label="search"
-                         type="text"
+                         width="45%"
                          clearable dense
                          hide-details single-line
                          prepend-inner-icon="mdi-magnify"
                        ></v-text-field>
+                    </v-col>
+
+                       <v-menu left bottom>
+                           <template v-slot:activator="{ on, attrs }">
+                             <v-btn
+                               icon
+                               v-bind="attrs"
+                               v-on="on"
+                             >
+                               <v-icon>mdi-account</v-icon>
+                             </v-btn>
+                           </template>
+
+                           <v-list>
+                             <v-list-item @click="logout">
+                               <v-list-item-title>ログアウト</v-list-item-title>
+                             </v-list-item>
+                           </v-list>
+                         </v-menu>
 
                 </v-app-bar>
             </v-list>
-               <v-alert
-                    style="position: fixed; z-index: 9999;"
-                    type="success"
-                    v-show="registerNcSuccess"
-                    elevation="5"
-                    transition="fade-transition"
-                    width="100%"
-                >
-                  登録しました。
-                </v-alert>
+
+            <v-snackbar
+                v-model="registerNcSuccess"
+                color="success"
+                top
+                timeout="1800"
+            >
+                登録しました。
+            </v-snackbar>
 
             <v-list twoLine avatar>
-                <v-list-item-group v-model="item" color="primary">
+                <v-list-item-group v-model="item">
                     <template v-for="(item, i) in filteredNcList">
                         <v-divider v-if="i!=0" inset></v-divider>
+                        <v-expand-x-transition>
+                            <div
+                                class="orange archiveButton"
+                                :id="'archiveButton-' + item.id"
+                                style="padding: 16px 0 16px 0; width: 80px; text-align: center; float: right; z-index: 9999; margin-left: 20px;"
+                                v-show="isArchiveVisible(item.id)"
+                                @click="archive(item.id)"
+                            >
+                              <v-icon>mdi-package-down</v-icon>
+                              <br>
+                              <h6 style="white-space: nowrap;">アーカイブ</h6>
+                            </div>
+                        </v-expand-x-transition>
                         <v-list-item
-                            :key="i"
+                            :key="item.id"
+                            :id="item.id"
                             :to="{ path: '/nc/detail', query: {ncId: item.id} }"
+                            v-touch="{ left: () => archiveShow(item.id) }"
                         >
                             <v-list-item-avatar v-if="item.avatar">
                                 <v-avatar :color="item.avatar.color">
@@ -281,11 +351,7 @@ var ncList = {
             </v-list>
 
             <v-list v-show="ncEmpty">
-                <v-sheet
-                    width="100%"
-                    height="100vh"
-                    align="center"
-                  >
+                <v-sheet width="100%" height="100vh" align="center">
                       命情報が登録されていません。
                   </v-sheet>
             </v-list>
