@@ -12,28 +12,51 @@ const bsList = [
     "千年王国", "再臨実相", "二人の証人"
 ];
 
+const testimonyList = ["B証", "祈り", "賛美", "R証"];
 
 Vue.component('bs-status', {
   data: function () {
     return {
-            selectedBs: [],
-            bsList: [],
-            loader: null,
-            loading: false,
+        ncId: "",
+        bsList: [],
+        progress: [],
+        testimonyList: [],
+        testimonyDone: [],
+        updatedAt: "",
+        loading: false,
     }
   },
     created() {
         this.bsList = bsList;
+        this.testimonyList = testimonyList;
+
+        const ncId = this.$route.query.ncId;
+        this.ncId = ncId;
+        axios.get("/api/bs/status?ncId=" + ncId).then(res => {
+            var progress = res.data.progress;
+            this.progress = Array.isArray(progress) ? progress : [];
+            var testimonyDone = res.data.testimony;
+            this.testimonyDone = Array.isArray(testimonyDone) ? testimonyDone : [];
+            var milliseconds = res.data.updatedAt._seconds * 1000;
+            this.updatedAt = moment(new Date(milliseconds)).format('YYYY年MM月DD日 HH:mm');
+        });
     },
     methods: {
+        updateBs() {
+            this.loading = true;
+
+            axios.post("/api/bs/status", { ncId: this.ncId, progress: this.progress, testimony: this.testimonyDone })
+            .then(res => {
+                this.updatedAt = moment(new Date()).format('YYYY年MM月DD日 HH:mm');
+                this.$emit('updateSuccess');
+           })
+            .catch( error => { console.log(error); })
+            .finally( () => { this.loading = false; });
+        }
+    },
+    filters: {
     },
     watch: {
-        loader () {
-            const l = this.loader
-            this[l] = !this[l]
-            setTimeout(() => (this[l] = false), 3000)
-            this.loader = null
-        },
     },
   template: `
       <v-card-text>
@@ -42,12 +65,33 @@ Vue.component('bs-status', {
                 class="text-no-wrap"
             >
                 <v-col
+                    :cols="12 / testimonyList.length"
+                    v-for="testimony in testimonyList"
+                    :key="testimony"
+                    class="my-0 py-0"
+                >
+                  <v-checkbox
+                   v-model="testimonyDone"
+                   :label="testimony" :value="testimony"
+                   class="my-0 py-0"
+                  ></v-checkbox>
+                </v-col>
+            </v-row>
+
+            <v-divider class="mt-0 mb-6 mx-10"></v-divider>
+
+            <v-row
+                dense no-gutters
+                class="text-no-wrap"
+            >
+                <v-col
                     cols="4"
                     v-for="bs in bsList"
                     :key="bs"
+                    class="my-0 py-0"
                 >
                   <v-checkbox
-                   v-model="selectedBs"
+                   v-model="progress"
                    :label="bs" :value="bs"
                    class="my-0 py-0"
                   ></v-checkbox>
@@ -59,56 +103,191 @@ Vue.component('bs-status', {
               :loading="loading"
               :disabled="loading"
               color="info"
-              @click="loader = 'loading'"
+              @click="updateBs"
             >
             更新
             </v-btn>
+            <div class="grey--text mt-2">
+              最終更新: {{ updatedAt }}
+            </div>
         </v-card-text>
         `
 });
 
-Vue.component('nc-profile', {
+Vue.component('nc-detail', {
   data: function () {
     return {
-            loader: null,
-            loading: false,
-            rules: [v => v.length <= 200 || '最大200文字まで'],
+        valid: false,
+        ncId: "",
+        relation: {
+            firstContact: "",
+            nurturer: "",
+            relationship: "",
+            createdAt: "",
+            updatedAt: "",
+        },
+        loading: false,
+        gradeList: ["1年", "2年", "3年", "4年", "M1", "M2", "社会人"],
+        nameRules: [
+            v => !!v || '必須入力です。',
+            v => v.length <= 20 || '20文字以下で入力してください。',
+        ],
     }
   },
   props: ['profile'],
     created() {
+        const ncId = this.$route.query.ncId;
+        this.ncId = ncId;
+
+        axios.get("/api/nc/relation?ncId=" + ncId).then(res => {
+            this.relation = res.data;
+            var milliseconds = this.relation.updatedAt._seconds * 1000;
+            this.relation.updatedAt = moment(new Date(milliseconds)).format('YYYY年MM月DD日 HH:mm');
+        });
     },
     methods: {
+        update() {
+            var isValid = this.$refs.form.validate();
+            if (!isValid) return;
+
+            this.loading = true;
+            axios.post("/api/nc/update/profile", { ncId: this.ncId, profile: this.profile })
+            .then( res => {
+
+                axios.post("/api/nc/update/relation", { ncId: this.ncId, relation: this.relation })
+                .then( res => {
+                    this.relation.updatedAt = moment(new Date()).format('YYYY年MM月DD日 HH:mm');
+                    this.$emit('updateSuccess');
+                    this.formReset();
+                });
+
+            })
+            .catch( error => { console.log(error); })
+            .finally( () => { this.loading = false; });
+
+
+
+        },
+        formReset() {
+            this.$refs.form.resetValidation();
+        },
+    },
+    filters: {
+//        moment(value) {
+//            if (value == null || value == "") return "";
+//            var milliseconds = value._seconds * 1000;
+//            return moment(new Date(milliseconds)).format('YYYY年MM月DD日 HH:mm');
+//        },
     },
     watch: {
-        loader () {
-            const l = this.loader
-            this[l] = !this[l]
-            setTimeout(() => (this[l] = false), 3000)
-            this.loader = null
-        },
     },
   template: `
       <v-card-text>
-          <v-textarea
-            v-model="profile.memo"
-            auto-grow clearable
-            counter filled
-            label="メモ"
-            counter="200"
-            :rules="rules"
+
+        <v-form ref="form" v-model="valid"
+             lazy-validation
             :loading="loading"
-          ></v-textarea>
+            :disabled="loading"
+        >
+
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="profile.name"
+                  :rules="nameRules"
+                  :counter="20"
+                  label="名前（必須）"
+                  class="mt-0 pt-0"
+                  clearable
+                  required
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="8">
+                <v-text-field
+                  v-model="profile.belongs"
+                  :counter="20"
+                  label="学校/社会人"
+                  class="mt-0 pt-0"
+                  clearable
+                ></v-text-field>
+              </v-col>
+
+              <v-col cols="4">
+                <v-select
+                  v-model="profile.grade"
+                  :items="gradeList"
+                  label="学年"
+                  class="mt-0 pt-0"
+                ></v-select>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="profile.memo"
+                  label="メモ"
+                  placeholder="興味関心、家族関係 etc."
+                  rows="2"
+                  counter="1000"
+                  class="mt-0 pt-0"
+                  auto-grow clearable
+                ></v-textarea>
+              </v-col>
+            </v-row>
+
+             <v-divider class="mt-4 mb-6 mx-10"></v-divider>
+
+            <v-row>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="relation.nurturer"
+                  :counter="20"
+                  label="管理者"
+                  class="mt-0 pt-0"
+                  clearable
+                ></v-text-field>
+              </v-col>
+
+              <v-col cols="6">
+                <v-text-field
+                  v-model="relation.relationship"
+                  :counter="60"
+                  label="繋がっている人"
+                  class="mt-0 pt-0"
+                  clearable
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="relation.firstContact"
+                  :counter="100"
+                  label="繋がったきっかけ"
+                  class="mt-0 pt-0"
+                  clearable
+                ></v-text-field>
+              </v-col>
+            </v-row>
+
 
           <v-btn
             block
             :loading="loading"
-            :disabled="loading"
+            :disabled="!valid || loading"
             color="info"
-            @click="loader = 'loading'"
+            @click="update"
+            class="mt-5"
           >
           更新
           </v-btn>
+            <div class="grey--text mt-2">
+              最終更新: {{ relation.updatedAt }}
+            </div>
+        </v-form>
       </v-card-text>
       `
 });
@@ -116,19 +295,34 @@ Vue.component('nc-profile', {
 var ncDetail = {
     data: function () {
         return {
+            ncId: "",
             pageTitle: '',
             tab: null,
-            profile: {},
+            profile: {
+                  name: "",
+                  belongs: "",
+                  grade: "",
+                  interest: "",
+                  family: "",
+                  avatar: { color: "" },
+            },
+            updateNcSuccess: false,
        }
     },
     created() {
-        const ncId = this.$route.params.id;
-        axios.get("/api/nc/detail/" + ncId).then(res => {
+        const ncId = this.$route.query.ncId;
+        this.ncId = ncId;
+
+        axios.get("/api/nc/detail?ncId=" + ncId).then(res => {
             this.profile = res.data;
-            this.pageTitle = res.data.name;
+            this.pageTitle = this.profile.name + " - " + this.profile.belongs + this.profile.grade;
         });
     },
     methods: {
+        updateSuccess() {
+            this.updateNcSuccess = true;
+            setTimeout(() => (this.updateNcSuccess = false), 1100);
+        },
     },
     watch: {
         loader () {
@@ -154,22 +348,31 @@ var ncDetail = {
                     >
                       <v-icon>mdi-chevron-left</v-icon>
                     </v-btn>
-
                     <v-toolbar-title>{{ pageTitle }}</v-toolbar-title>
                 </v-app-bar>
             </v-list>
 
+               <v-alert
+                    style="position: fixed; z-index: 9999;"
+                    type="success"
+                    v-show="updateNcSuccess"
+                    elevation="5"
+                    transition="fade-transition"
+                    width="100%"
+                >
+                  更新しました。
+                </v-alert>
 
            <v-card-text>
                 <v-tabs-items v-model="tab">
                   <v-tab-item>
                     <v-card flat>
-                          <bs-status></bs-status>
+                          <bs-status @updateSuccess="updateSuccess"></bs-status>
                     </v-card>
                   </v-tab-item>
                   <v-tab-item>
                     <v-card flat>
-                          <nc-profile :profile="profile"></nc-profile>
+                          <nc-detail :profile="profile" @updateSuccess="updateSuccess"></nc-detail>
                     </v-card>
                   </v-tab-item>
                 </v-tabs-items>
@@ -179,13 +382,13 @@ var ncDetail = {
                 <v-tabs
                   v-model="tab"
                   background-color="grey lighten-5"
-                      color="primary"
+                  color="primary"
                   grow
                 >
-                  <v-tab>BS状況</v-tab>
-                  <v-tab>プロフィール</v-tab>
+                    <v-tab>BS状況</v-tab>
+                    <v-tab>プロフィール</v-tab>
                 </v-tabs>
-              </v-bottom-navigation>
+            </v-bottom-navigation>
         </v-flex>
    `
 };

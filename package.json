@@ -4,5 +4,10 @@
   "scripts": {
     "use": "firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN}",
     "emulate": "firebase emulators:start --import=./.saved-data --export-on-exit --token ${FIREBASE_TOKEN}"
+  },
+  "dependencies": {
+    "dateformat": "^4.4.1",
+    "moment": "^2.29.1",
+    "vue-moment": "^4.1.0"
   }
 }

@@ -11,7 +11,7 @@ RUN apk add --update openjdk11
 
 WORKDIR /app/functions
 COPY package*.json ./
-CMD npm install
+RUN npm install
 
 WORKDIR /app
 CMD npm run use && npm run emulate
