@@ -210,7 +210,7 @@ var ncList = {
             this.ncListLoading = true
             axios.get("/api/nc/list").then(res => {
                 this.items = res.data;
-                setTimeout(() => (this.ncListLoading = false), 200);
+                setTimeout(() => (this.ncListLoading = false), 700);
             });
         },
         iconText(name) {
@@ -301,12 +301,10 @@ var ncList = {
                 {{ snackbar.text }}
             </v-snackbar>
 
-            <v-fade-transition v-for="i in 10" :key="i">
-                <v-skeleton-loader
+                <v-skeleton-loader v-for="i in 5" :key="i"
                     v-show="ncListLoading"
                     type="list-item-avatar-two-line"
                 ></v-skeleton-loader>
-            </v-fade-transition>
 
             <v-list twoLine avatar v-show="!ncListLoading">
                 <v-list-item-group v-model="item">
@@ -345,11 +343,13 @@ var ncList = {
                 </v-list-item-group>
             </v-list>
 
+            <v-fade-transition>
             <v-list v-show="ncEmpty">
                 <v-sheet width="100%" height="100vh" align="center">
                       命情報が登録されていません。
                   </v-sheet>
             </v-list>
+            </v-fade-transition>
 
             <register-nc @registerNcSuccess="success"></register-nc>
 
