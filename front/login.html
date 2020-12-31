@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth__ja.js"></script>
     <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <style>
+    body {
+        height: 90vh
+    }
+
+    #loader {
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        width: 95%;
+    }
 </style>
 
 <body>
@@ -14,7 +24,7 @@
 
 <!--<script type="text/javascript" src="src/dist/vue.js"></script>-->
 <!--<script type="text/javascript" src="src/dist/vue.min.js"></script>-->
-<script type="text/javascript" src="src/dist/vuetify.js"></script>
+<!--<script type="text/javascript" src="src/dist/vuetify.js"></script>-->
 <!--<script type="text/javascript" src="src/dist/vuetify.min.js"></script>-->
 
 <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -26,23 +36,18 @@
 
 <script type="text/javascript">
       // FirebaseUI config.
-      var uiConfig = {
-          callbacks: {
+    var uiConfig = {
+        callbacks: {
             signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-              return true;
+                return true;
             },
             uiShown: function() {
-              document.getElementById('loader').style.display = 'none';
+                    document.getElementById('loader').style.display = 'none';
             }
-          },
-                signInFlow: 'popup',
-
-          signInSuccessUrl: '/',
-        signInOptions: [{
-            provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-            requireDisplayName: false
-        }]
-      };
+        },
+        signInSuccessUrl: '/',
+        signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID]
+    };
 
       var ui = new firebaseui.auth.AuthUI(firebase.auth());
       ui.start('#firebaseui-auth-container', uiConfig);

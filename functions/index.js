@@ -23,9 +23,33 @@ app.use('/api/bs', require('./routes/bs.js'));
 //exports.app = functions.https.onCall(app);
 exports.app = functions.https.onRequest(app);
 
-//app.use('/list', require('./routes/list'));
-
 //404エラー
 app.use(function(req, res, next){
     res.status(404).render('404.ejs', {message: "Sorry, page not found", title: "404エラー"});
+});
+
+
+const admin = require('./firebaseAdmin.js');
+const db = admin.firestore();
+const userCollection = db.collection("users");
+
+/**
+ * Authenticationトリガー
+ */
+exports.registerUser = functions.auth.user().onCreate((user) => {
+    const userUid = user.uid;
+    const userEmail = user.email;
+    const userName = user.displayName;
+
+    const newUser = {
+        email: userEmail,
+        name: userName
+    };
+
+    return userCollection.doc(userUid).set(newUser);
+});
+
+exports.deleteUser = functions.auth.user().onDelete((user) => {
+    const userUid = user.uid;
+    return userCollection.doc(userUid).delete();
 });
