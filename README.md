@@ -7,3 +7,9 @@ docker-compose build && docker-compose up -d
 ```
 
 
+### (デプロイ)
+※本番環境にデプロイされるので注意！<br>
+コンテナ内で
+```
+firebase deploy
+```
