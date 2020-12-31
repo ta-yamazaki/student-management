@@ -37,16 +37,25 @@ const userCollection = db.collection("users");
  * Authenticationトリガー
  */
 exports.registerUser = functions.auth.user().onCreate((user) => {
-    const userUid = user.uid;
-    const userEmail = user.email;
-    const userName = user.displayName;
+    var userUid = user.uid;
+    var userEmail = user.email;
+    var userName = user.displayName;
 
-    const newUser = {
-        email: userEmail,
-        name: userName
-    };
 
-    return userCollection.doc(userUid).set(newUser);
+    // admin.auth().getUser() 経由で取得, 取得するまでawait
+    const authedUser = await admin.auth().getUser(userUid)
+    .then(function (authedUser){
+        var userName = authedUser.displayName;
+
+        var newUser = {
+            email: userEmail,
+            name: userName
+        };
+
+        return userCollection.doc(userUid).set(newUser);
+    });
+
+
 });
 
 exports.deleteUser = functions.auth.user().onDelete((user) => {
