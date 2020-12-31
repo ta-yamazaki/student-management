@@ -4,9 +4,9 @@ const express = require('express');
 const app = express();
 
 const path = require('path');
-const cors = require('cors');
+//const cors = require('cors');
 // Automatically allow cross-origin requests
-app.use(cors({ origin: true }));
+//app.use(cors({ origin: true }));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
