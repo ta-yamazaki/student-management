@@ -43,7 +43,7 @@ exports.registerUser = functions.auth.user().onCreate((user) => {
 
 
     // admin.auth().getUser() 経由で取得, 取得するまでawait
-    const authedUser = await admin.auth().getUser(userUid)
+    const authedUser =  admin.auth().getUser(userUid)
     .then(function (authedUser){
         var userName = authedUser.displayName;
 
