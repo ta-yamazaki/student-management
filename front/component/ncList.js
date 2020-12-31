@@ -32,7 +32,6 @@ Vue.component('register-nc', {
                 if (this.profile.grade == null) this.profile.grade = "";
                 axios.post("/api/nc/register/profile", { profile: this.profile })
                 .then( res => {
-                    console.log(res.status);
                     this.$emit('registerNcSuccess');
                     this.dialog = false;
                     this.formReset();
@@ -181,7 +180,8 @@ var ncList = {
             text: "",
             color: "",
         },
-        visibleItemId: "",
+        archiveTargetId: "",
+        deleteDialog: false,
       }
     },
     created() {
@@ -214,26 +214,21 @@ var ncList = {
             return name.charAt(0);
         },
         archiveShow(ncId) {
-            this.visibleItemId = ncId;
+            this.archiveTargetId = ncId;
         },
         archiveHide() {
-            this.visibleItemId = "";
+            this.archiveTargetId = "";
         },
-        archive(ncId) {
-            var check = confirm('一覧から削除します。よろしいですか？');
-            if (!check) {
-                this.archiveHide();
-                return;
-            }
-
-            axios.post("/api/nc/archive", { ncId: ncId })
+        archive() {
+            axios.post("/api/nc/archive", { ncId: this.archiveTargetId })
             .then(res => {
+                this.deleteDialog = false;
                 this.archiveHide();
                 this.getNcList();
             });
         },
-        isArchiveVisible(ncId) {
-            return this.visibleItemId == ncId;
+        isArchiveTarget(ncId) {
+            return this.archiveTargetId == ncId;
         },
         success() {
             this.snackbar.text = "登録しました。";
@@ -311,30 +306,26 @@ var ncList = {
                         <v-list-item
                             :key="item.id"
                             :id="item.id"
-                            :to="{ path: '/nc/detail', query: {ncId: item.id} }"
                             v-touch="{ left: () => archiveShow(item.id), right: () => archiveHide() }"
                         >
-                            <v-list-item-avatar v-if="item.avatar">
+                            <v-list-item-avatar v-if="item.avatar" :to="{ path: '/nc/detail', query: {ncId: item.id} }">
                                 <v-avatar :color="item.avatar.color">
                                   <span class="white--text headline">{{ iconText(item.name) }}</span>
                                 </v-avatar>
                             </v-list-item-avatar>
-                            <v-list-item-content>
+                            <v-list-item-content :to="{ path: '/nc/detail', query: {ncId: item.id} }">
                                 <v-list-item-title v-html="item.name"></v-list-item-title>
                                 <v-list-item-subtitle v-if="twoLine || threeLine" v-html="item.belongs + item.grade"></v-list-item-subtitle>
-                            </v-list-item-content>
-                            <v-list-item-content>
-                                <v-icon color="white" large center>mdi-trash-can-outline</v-icon>
                             </v-list-item-content>
                             <v-expand-x-transition>
                                 <v-card
                                     flat
-                                    v-show="isArchiveVisible(item.id)"
+                                    v-show="isArchiveTarget(item.id)"
                                     class="red lighten-1 center"
                                       height="72"
                                       width="80"
                                       style="margin: 0 -16px; text-align: center;"
-                                      @click="archive(item.id)"
+                                      @click="deleteDialog = true"
                                 >
                                        <v-icon color="white" style="height:100%;">mdi-trash-can-outline</v-icon>
                                 </v-card>
@@ -352,6 +343,31 @@ var ncList = {
 
             <register-nc @registerNcSuccess="success"></register-nc>
 
+            <v-dialog
+              v-model="deleteDialog"
+              persistent
+            >
+              <v-card>
+                <v-card-title>一覧から削除します。</v-card-title>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    color="red darken-1"
+                    text
+                    @click="archive()"
+                  >
+                    OK
+                  </v-btn>
+                  <v-btn
+                    color=""
+                    text
+                    @click="deleteDialog = false; archiveTargetId = '';"
+                  >
+                    Cancel
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
         </v-flex>
     `
 };
