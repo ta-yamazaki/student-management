@@ -256,8 +256,15 @@ var ncList = {
                     elevation="3" elevate-on-scroll
                     color="grey lighten-5" height="38"
                 >
-                  <!--  <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
-                    <v-toolbar-title>{{ pageTitle }}</v-toolbar-title>
+                <!--  <v-app-bar-nav-icon>
+                    <v-img
+                        src="./images/logo-square.png"
+                        width="8"
+                        class="mr-2"
+                      ></v- img>
+                  </v-app-bar-nav-icon> -->
+
+                    <v-toolbar-title class="pl-0">{{ pageTitle }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-spacer></v-spacer>
                     <v-col cols="6">
