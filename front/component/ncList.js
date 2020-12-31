@@ -170,6 +170,7 @@ var ncList = {
     data: function () {
       return {
         pageTitle: 'NC一覧',
+        ncListLoading: true,
         search: '',
         item: -1, //デフォルトでアクティブにするアイテム（index）
         items: [],
@@ -195,7 +196,7 @@ var ncList = {
         　})
         },
         ncEmpty() {
-            return this.items.length == 0;
+            return this.items.length == 0 && !this.ncListLoading;
         },
     },
     methods: {
@@ -206,8 +207,10 @@ var ncList = {
 //            getNcList().then(function(res) {
 //                this.items = res.data;
 //            });
+            this.ncListLoading = true
             axios.get("/api/nc/list").then(res => {
                 this.items = res.data;
+                setTimeout(() => (this.ncListLoading = false), 200);
             });
         },
         iconText(name) {
@@ -247,7 +250,6 @@ var ncList = {
     },
     template: `
         <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto">
-
             <v-list>
                 <v-app-bar
                     dense fixed
@@ -269,23 +271,23 @@ var ncList = {
                        ></v-text-field>
                     </v-col>
 
-                       <v-menu left bottom>
-                           <template v-slot:activator="{ on, attrs }">
-                             <v-btn
-                               icon
-                               v-bind="attrs"
-                               v-on="on"
-                             >
-                               <v-icon>mdi-account</v-icon>
-                             </v-btn>
-                           </template>
+                   <v-menu left bottom>
+                       <template v-slot:activator="{ on, attrs }">
+                         <v-btn
+                           icon
+                           v-bind="attrs"
+                           v-on="on"
+                         >
+                           <v-icon>mdi-account</v-icon>
+                         </v-btn>
+                       </template>
 
-                           <v-list>
-                             <v-list-item @click="logout">
-                               <v-list-item-title>ログアウト</v-list-item-title>
-                             </v-list-item>
-                           </v-list>
-                         </v-menu>
+                       <v-list>
+                         <v-list-item @click="logout">
+                           <v-list-item-title>ログアウト</v-list-item-title>
+                         </v-list-item>
+                       </v-list>
+                     </v-menu>
 
                 </v-app-bar>
             </v-list>
@@ -299,37 +301,45 @@ var ncList = {
                 {{ snackbar.text }}
             </v-snackbar>
 
-            <v-list twoLine avatar>
+            <v-fade-transition v-for="i in 10" :key="i">
+                <v-skeleton-loader
+                    v-show="ncListLoading"
+                    type="list-item-avatar-two-line"
+                ></v-skeleton-loader>
+            </v-fade-transition>
+
+            <v-list twoLine avatar v-show="!ncListLoading">
                 <v-list-item-group v-model="item">
                     <template v-for="(item, i) in filteredNcList">
                         <v-divider v-if="i!=0" inset></v-divider>
+                        <v-expand-x-transition>
+                            <v-card
+                                flat
+                                v-show="isArchiveTarget(item.id)"
+                                class="red lighten-1 center"
+                                  height="72"
+                                  width="80"
+                                  style="margin: 0 ; text-align: center; float:right;"
+                                  @click="deleteDialog = true"
+                            >
+                               <v-icon color="white" style="height:100%;">mdi-trash-can-outline</v-icon>
+                            </v-card>
+                        </v-expand-x-transition>
                         <v-list-item
                             :key="item.id"
                             :id="item.id"
+                            :to="{ path: '/nc/detail', query: {ncId: item.id} }"
                             v-touch="{ left: () => archiveShow(item.id), right: () => archiveHide() }"
                         >
-                            <v-list-item-avatar v-if="item.avatar" :to="{ path: '/nc/detail', query: {ncId: item.id} }">
+                            <v-list-item-avatar v-if="item.avatar">
                                 <v-avatar :color="item.avatar.color">
                                   <span class="white--text headline">{{ iconText(item.name) }}</span>
                                 </v-avatar>
                             </v-list-item-avatar>
-                            <v-list-item-content :to="{ path: '/nc/detail', query: {ncId: item.id} }">
+                            <v-list-item-content>
                                 <v-list-item-title v-html="item.name"></v-list-item-title>
                                 <v-list-item-subtitle v-if="twoLine || threeLine" v-html="item.belongs + item.grade"></v-list-item-subtitle>
                             </v-list-item-content>
-                            <v-expand-x-transition>
-                                <v-card
-                                    flat
-                                    v-show="isArchiveTarget(item.id)"
-                                    class="red lighten-1 center"
-                                      height="72"
-                                      width="80"
-                                      style="margin: 0 -16px; text-align: center;"
-                                      @click="deleteDialog = true"
-                                >
-                                       <v-icon color="white" style="height:100%;">mdi-trash-can-outline</v-icon>
-                                </v-card>
-                            </v-expand-x-transition>
                         </v-list-item>
                     </template>
                 </v-list-item-group>
