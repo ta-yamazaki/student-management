@@ -22,16 +22,6 @@ Vue.component('register-nc', {
         }
       },
         created() {
-
-//            this.bsList = bsList;
-//            const ncId = this.$route.query.ncId;
-//            this.ncId = ncId;
-//            axios.get("/api/bs/status?ncId=" + ncId).then(res => {
-//                var progress = res.data.progress;
-//                this.progress = Array.isArray(progress) ? progress : [];
-//                var milliseconds = res.data.updatedAt._seconds * 1000;
-//                this.updatedAt = moment(new Date(milliseconds)).format('YYYY年MM月DD日 HH:mm');
-//            });
         },
         methods: {
             register() {
@@ -76,9 +66,8 @@ Vue.component('register-nc', {
       template: `
         <v-row justify="center">
         <v-form ref="form" v-model="valid" lazy-validation
-                      :loading="loading"
-                      :disabled="loading"
-                      >
+            :loading="loading" :disabled="loading"
+        >
             <v-dialog
               v-model="dialog"
               fullscreen
@@ -86,7 +75,7 @@ Vue.component('register-nc', {
               transition="dialog-bottom-transition"
             >
               <template v-slot:activator="{ on, attrs }">
-                  <v-footer fixed color="transparent" class="px-2 py-2">
+                  <v-footer fixed color="transparent" class="px-3 py-3">
                       <v-spacer></v-spacer>
                       <v-btn
                         color="info"
@@ -187,7 +176,11 @@ var ncList = {
         items: [],
         twoLine: true,
         avatar: true,
-        registerNcSuccess: false,
+        snackbar: {
+            display: false,
+            text: "",
+            color: "",
+        },
         visibleItemId: "",
         overlay: false,
       }
@@ -208,10 +201,12 @@ var ncList = {
     },
     methods: {
         getNcList() {
-    //        var getNcList = firebase.functions().httpsCallable('https://localhost/nc/list');
-    //        getNcList().then(function(res) {
-    //            this.items = res.data;
-    //        });
+//            var functions = firebase.functions();
+//            functions.useFunctionsEmulator("http://localhost:5001");
+//            var getNcList = functions.httpsCallable("app/api/nc/list");
+//            getNcList().then(function(res) {
+//                this.items = res.data;
+//            });
             axios.get("/api/nc/list").then(res => {
                 this.items = res.data;
             });
@@ -231,16 +226,19 @@ var ncList = {
             this.archiveHide();
         },
         archive(ncId) {
-            this.archiveHide();
-            console.log("archived");
-//            var archiveButton = document.getElementById("archiveButton-" + ncId);
-//            archiveButton.style.visibility ="hidden";
+            axios.post("/api/nc/archive", { ncId: ncId })
+            .then(res => {
+                this.archiveHide();
+                this.getNcList();
+            });
         },
         isArchiveVisible(ncId) {
             return this.visibleItemId == ncId;
         },
         success() {
-            this.registerNcSuccess = true;
+            this.snackbar.text = "登録しました。";
+            this.snackbar.color = "success";
+            this.snackbar.display = true;
             this.getNcList();
         },
         logout() {
@@ -305,12 +303,12 @@ var ncList = {
             </v-list>
 
             <v-snackbar
-                v-model="registerNcSuccess"
-                color="success"
+                v-model="snackbar.display"
+                :color="snackbar.color"
                 top
                 timeout="1800"
             >
-                登録しました。
+                {{ snackbar.text }}
             </v-snackbar>
 
             <v-list twoLine avatar>
@@ -319,15 +317,14 @@ var ncList = {
                         <v-divider v-if="i!=0" inset></v-divider>
                         <v-expand-x-transition>
                             <div
-                                class="orange archiveButton"
-                                :id="'archiveButton-' + item.id"
-                                style="padding: 16px 0 16px 0; width: 80px; text-align: center; float: right; z-index: 9999; margin-left: 20px;"
+                                class="orange darken-1 archiveButton"
+                                style="padding: 16px 0 16px 0; width: 80px; text-align: center; float: right; z-index: 9999;"
                                 v-show="isArchiveVisible(item.id)"
                                 @click="archive(item.id)"
                             >
-                              <v-icon>mdi-package-down</v-icon>
+                              <v-icon color="white">mdi-package-down</v-icon>
                               <br>
-                              <h6 style="white-space: nowrap;">アーカイブ</h6>
+                              <h6 style="white-space: nowrap; color:white;">アーカイブ</h6>
                             </div>
                         </v-expand-x-transition>
                         <v-list-item

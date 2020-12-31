@@ -3,14 +3,11 @@
 <head>
 <!--    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">-->
     <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css">
-    <!--    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">-->
     <link rel="stylesheet" href="src/dist/vuetify.min.css">
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <link rel="icon" type="image/x-icon" href="./favicon.ico"/>
     <title>NC History</title>
-
-
 </head>
 <style>
     [v-cloak] {
@@ -46,17 +43,10 @@
     </v-app>
 </div>
 
-
-<script type="text/javascript" src="src/dist/vue.js"></script>
-<!--<script type="text/javascript" src="src/dist/vue.min.js"></script>-->
-<script type="text/javascript" src="src/dist/vuetify.js"></script>
-<!--<script type="text/javascript" src="src/dist/vuetify.min.js"></script>-->
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-
 <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-<script src="/__/firebase/7.23.0/firebase-app.js"></script>
+<script src="/__/firebase/8.1.1/firebase-app.js"></script>
 <script src="/__/firebase/8.1.1/firebase-auth.js"></script>
+<script src="/__/firebase/8.1.1/firebase-functions.js"></script>
 <!-- Initialize Firebase -->
 <script src="/__/firebase/init.js"></script>
 <script type="text/javascript">
@@ -64,6 +54,12 @@
         if (user == null) window.location.href = "/login.html";
     });
 </script>
+
+<script type="text/javascript" src="src/dist/vue.js"></script>
+<!--<script type="text/javascript" src="src/dist/vue.min.js"></script>-->
+<script type="text/javascript" src="src/dist/vuetify.js"></script>
+<!--<script type="text/javascript" src="src/dist/vuetify.min.js"></script>-->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script type="text/javascript" src="src/dist/moment.js"></script>

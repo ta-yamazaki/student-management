@@ -15,7 +15,8 @@ const Newcomer = require('../model/Newcomer.js');
  */
 router.get('/list', function(req, res, next) {
 
-    ncCollection.get().then(function(querySnapshot) {
+    ncCollection.where('isArchived', '==', false).get()
+    .then(function(querySnapshot) {
         var ncList = [];
         querySnapshot.forEach(function(doc) {
             ncList.push(doc.data());
@@ -26,9 +27,6 @@ router.get('/list', function(req, res, next) {
     }).finally(function() {
     });
 
-//    cors(req, res, () => {
-//        res.send(ncList);
-//    });
 });
 
 router.get('/detail', function(req, res, next) {
@@ -59,6 +57,7 @@ router.post('/register/profile', function(req, res, next) {
     var id = uuid.v4();
     profile["id"] = id;
     profile["avatar"] = { color: getAvatarColor() };
+    profile["isArchived"] = false;
     profile["createdAt"] = timestamp;
     profile["updatedAt"] = timestamp;
 
@@ -130,11 +129,52 @@ router.post('/update/relation', function(req, res, next) {
 
 });
 
+router.post('/archive', function(req, res, next) {
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+    var ncId = req.body.ncId;
+
+    var archive = {
+        ncId: ncId,
+        isArchived: true,
+        updatedAt: timestamp,
+    };
+
+    ncCollection.doc(ncId).update(archive)
+    .then(function() {
+        res.status(200).send("Update success.");
+    })
+    .catch(function(error) {
+        res.status(500).send(error);
+    });
+
+});
+
+router.post('/disarchive', function(req, res, next) {
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+    var ncId = req.body.ncId;
+
+    var archive = {
+        ncId: ncId,
+        isArchived: false,
+        updatedAt: timestamp,
+    };
+
+    ncCollection.doc(ncId).update(archive)
+    .then(function() {
+        res.status(200).send("Update success.");
+    })
+    .catch(function(error) {
+        res.status(500).send(error);
+    });
+
+});
+
 
 /**
  * 削除系
  */
-
 
 
 module.exports = router;
