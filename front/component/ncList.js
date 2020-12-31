@@ -182,7 +182,6 @@ var ncList = {
             color: "",
         },
         visibleItemId: "",
-        overlay: false,
       }
     },
     created() {
@@ -216,16 +215,17 @@ var ncList = {
         },
         archiveShow(ncId) {
             this.visibleItemId = ncId;
-            this.overlay = true;
         },
         archiveHide() {
             this.visibleItemId = "";
         },
-        overlayHide() {
-            this.overlay = false;
-            this.archiveHide();
-        },
         archive(ncId) {
+            var check = confirm('一覧から削除します。よろしいですか？');
+            if (!check) {
+                this.archiveHide();
+                return;
+            }
+
             axios.post("/api/nc/archive", { ncId: ncId })
             .then(res => {
                 this.archiveHide();
@@ -252,14 +252,7 @@ var ncList = {
     },
     template: `
         <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto">
-            <v-overlay
-                :value="overlay"
-                opacity="0"
-                z-index="7000"
-                absolute
-                v-touch="{ end: () => overlayHide() }"
-            >
-            </v-overlay>
+
             <v-list>
                 <v-app-bar
                     dense fixed
@@ -315,23 +308,11 @@ var ncList = {
                 <v-list-item-group v-model="item">
                     <template v-for="(item, i) in filteredNcList">
                         <v-divider v-if="i!=0" inset></v-divider>
-                        <v-expand-x-transition>
-                            <div
-                                class="orange darken-1 archiveButton"
-                                style="padding: 16px 0 16px 0; width: 80px; text-align: center; float: right; z-index: 9999;"
-                                v-show="isArchiveVisible(item.id)"
-                                @click="archive(item.id)"
-                            >
-                              <v-icon color="white">mdi-package-down</v-icon>
-                              <br>
-                              <h6 style="white-space: nowrap; color:white;">アーカイブ</h6>
-                            </div>
-                        </v-expand-x-transition>
                         <v-list-item
                             :key="item.id"
                             :id="item.id"
                             :to="{ path: '/nc/detail', query: {ncId: item.id} }"
-                            v-touch="{ left: () => archiveShow(item.id) }"
+                            v-touch="{ left: () => archiveShow(item.id), right: () => archiveHide() }"
                         >
                             <v-list-item-avatar v-if="item.avatar">
                                 <v-avatar :color="item.avatar.color">
@@ -342,6 +323,22 @@ var ncList = {
                                 <v-list-item-title v-html="item.name"></v-list-item-title>
                                 <v-list-item-subtitle v-if="twoLine || threeLine" v-html="item.belongs + item.grade"></v-list-item-subtitle>
                             </v-list-item-content>
+                            <v-list-item-content>
+                                <v-icon color="white" large center>mdi-trash-can-outline</v-icon>
+                            </v-list-item-content>
+                            <v-expand-x-transition>
+                                <v-card
+                                    flat
+                                    v-show="isArchiveVisible(item.id)"
+                                    class="red lighten-1 center"
+                                      height="72"
+                                      width="80"
+                                      style="margin: 0 -16px; text-align: center;"
+                                      @click="archive(item.id)"
+                                >
+                                       <v-icon color="white" style="height:100%;">mdi-trash-can-outline</v-icon>
+                                </v-card>
+                            </v-expand-x-transition>
                         </v-list-item>
                     </template>
                 </v-list-item-group>
