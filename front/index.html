@@ -9,6 +9,13 @@
     <link rel="icon" type="image/x-icon" href="./favicon.ico"/>
     <title>NC History</title>
 </head>
+<script type="text/javascript">
+
+    var params = (new URL(document.location)).searchParams;
+    var formName = params.get('form');
+    if (formName != null) window.location.href = "/template/" + formName + ".html";
+
+</script>
 <style>
     [v-cloak] {
         visibility: hidden;
@@ -51,7 +58,7 @@
 <script src="/__/firebase/init.js"></script>
 <script type="text/javascript">
     firebase.auth().onAuthStateChanged(function(user) {
-        if (user == null) window.location.href = "/login.html";
+        if (user == null) window.location.href = "/template/login.html";
     });
 </script>
 

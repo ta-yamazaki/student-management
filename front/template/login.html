@@ -21,7 +21,7 @@
 <div id="firebaseui-auth-container"></div>
 <div id="loader">
 <!--    <h1>NC History</h1>-->
-    <img id="logo" src="./images/logo.png" height="180">
+    <img id="logo" src="../images/logo.png" height="180">
     <br>
     <br>
     <div id="loading" style="font-size: 14px;">Loading...</div>
@@ -50,11 +50,15 @@
                 document.getElementById('loader').style.display = 'none';
             }
         },
+        signInFlow: 'popup',
         signInSuccessUrl: '/',
         signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID]
     };
 
       var ui = new firebaseui.auth.AuthUI(firebase.auth());
+      // if (location.hostname === "localhost") {
+      //   ui.useEmulator('http://localhost:9099/');
+      // }
       setTimeout(function() {
         ui.start('#firebaseui-auth-container', uiConfig);
       }, 1000);

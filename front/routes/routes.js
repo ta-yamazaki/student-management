@@ -10,7 +10,6 @@ var router = new VueRouter({
     mode: "history",
     routes: [
         { path: "/", component: ncList },
-        { path: "/top.html", component: ncList },
         { path: "/nc/list", component: ncList },
         { path: "/nc/detail", component: ncDetail }
     ]
