@@ -166,14 +166,341 @@ Vue.component('register-nc', {
 });
 
 
+const bsList = [
+    "B導入", "ペテロ", "ヨシュア",
+    "エリヤ", "人間", "七段階",
+    "時代性", "比喩", "火と終末",
+    "洪水", "三位一体", "無知",
+    "予定", "中心人物", "サタン",
+    "啓示", "再臨･引上", "カイン",
+    "異端", "創造目的", "堕落",
+    "霊界", "復活", "罪･悔改",
+    "御子", "ひと時", "オリブ",
+    "千年王国", "再臨実相", "二人の証人"
+];
+
+Vue.component('activity-report-form', {
+    data: function () {
+        return {
+            activity: {
+                newcomerId: "",
+                date: "",
+                type: "",
+                event: "",
+                lecture: "",
+                lecturer: "",
+                attendees: "",
+                comment: "",
+                next: "",
+                idOfReportingUser:"",
+            },
+            activityTypeList: [ "器", "対話", "BS", "BS以外の講義" ],
+            bsList: bsList,
+            lecturerList: [],
+            calendar: false,
+            valid: false,
+            ncRules: [ v => !!v || '必須入力です。' ],
+            dateRules: [ v => !!v || '必須入力です。' ],
+            typeRules: [ v => !!v || '必須入力です。' ],
+            commentRules: [
+                v => !!v || '必須入力です。',
+                v => v.length <= 1000 || '1000文字以下で入力してください。',
+            ],
+            nextActionRules: [
+                v => !!v || '必須入力です。',
+                v => v.length <= 300 || '300文字以下で入力してください。',
+            ],
+            loading: false,
+        }
+    },
+    props: ["activityReportDialog", "ncList"],
+    created() {
+        firebase.auth().onAuthStateChanged(function(user) {
+            this.idOfReportingUser = user.uid;
+        });
+    },
+    computed: {
+        activityTypeSelected() {
+            return this.activity.type != null && this.activity.type != "";
+        },
+    },
+    methods: {
+        submitReport() {
+            var isValid = this.$refs.form.validate();
+            if (!isValid) return;
+
+            this.loading = true;
+            axios.post("/api/activity/report", { activity: this.activity })
+            .then( res => {
+                this.$emit('registerFormSuccess');
+                this.dialog = false;
+                this.formReset();
+            })
+            .catch( error => {
+                console.log(error);
+            })
+            .finally( () => {
+                this.loading = false;
+            });
+        },
+        cancel() {
+            this.$emit('activityReportFormHide');
+            this.formReset();
+        },
+        formReset() {
+            this.activity = {
+                newcomerId: "",
+                date: "",
+                type: "",
+                event: "",
+                lecture: "",
+                lecturer: "",
+                attendees: "",
+                comment: "",
+                next: "",
+                idOfReportingUser:"",
+            };
+            this.$refs.form.resetValidation();
+        },
+        activityTypeIs(type) {
+            return type == this.activity.type;
+        },
+        changeNewcomerId(selected) {
+        console.log(selected);
+            this.activity.newcomerId = selected.value;
+        },
+    },
+    watch: {
+    },
+    template: `
+        <v-row justify="center">
+        <v-form ref="form" v-model="valid" lazy-validation
+            :loading="loading" :disabled="loading"
+        >
+            <v-dialog
+              v-model="activityReportDialog"
+              fullscreen
+              hide-overlay
+              transition="dialog-bottom-transition"
+            >
+            <v-list>
+                <v-app-bar fixed dark color="primary">
+                  <v-btn type="button" icon dark @click="cancel">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                  <v-toolbar-title>命報告フォーム</v-toolbar-title>
+                  <v-spacer></v-spacer>
+                  <v-toolbar-items>
+                    <v-btn dark @click="submitReport"
+                      :loading="loading"
+                      :disabled="!valid || loading"
+                    >
+                      送信
+                    </v-btn>
+                  </v-toolbar-items>
+                </v-app-bar>
+            </v-list>
+
+              <v-card>
+                <v-container>
+                  <v-row style="height: 65px;"></v-row>
+                  <v-row>
+                    <v-col cols="12">
+
+                            <v-autocomplete
+                              :items="ncList"
+                              :item-text="function(nc) { return nc.name + ' - ' + nc.belongs + nc.grade }"
+                              item-value="id"
+                              dense
+                              label="命 *"
+                              class="mt-0 pt-0"
+                              :rules="ncRules"
+                              @change="changeNewcomerId"
+                            ></v-autocomplete>
+
+                    </v-col>
+                  </v-row>
+
+                  <v-row>
+                    <v-col
+                      cols="12"
+                    >
+                      <v-menu
+                        v-model="calendar"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="290px"
+                      >
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-text-field
+                            v-model="activity.date"
+                            label="日付 *"
+                            prepend-icon="mdi-calendar"
+                            class="mt-0 pt-0"
+                            readonly
+                            v-bind="attrs"
+                            v-on="on"
+                            :rules="dateRules"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker
+                          v-model="activity.date"
+                          @input="calendar = false"
+                          locale="jp-ja"
+                          no-title
+                          :day-format="date => new Date(date).getDate()"
+                        ></v-date-picker>
+                      </v-menu>
+                    </v-col>
+                  </v-row>
+
+                  <v-row>
+                    <v-col cols="12">
+                      <v-col cols="12" class="pa-0" style="color: rgba(0,0,0,.6); font-size: 14px;">
+                        アクション *
+                      </v-col>
+                      <v-radio-group
+                          v-model="activity.type"
+                          :rules="typeRules"
+                          class="mt-0"
+                          row
+                      >
+                        <v-radio
+                          v-for="activityType in activityTypeList"
+                          :key="activityType"
+                          :label="activityType"
+                          :value="activityType"
+                        ></v-radio>
+                      </v-radio-group>
+                    </v-col>
+                  </v-row>
+
+                  <v-expand-transition>
+                  <v-row v-if="activityTypeIs('器')">
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="activity.event"
+                        label="器名"
+                        class="mt-0 pt-0"
+                        clearable
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                  </v-expand-transition>
+
+                  <v-expand-transition>
+                <v-row v-if="activityTypeIs('BS')">
+                  <v-col cols="12">
+                      <v-select
+                        v-model="activity.lecture"
+                        :items="bsList"
+                        label="講義"
+                        class="mt-0 pt-0"
+                        clearable
+                      ></v-select>
+                  </v-col>
+              </v-row>
+                  </v-expand-transition>
+
+                  <v-expand-transition>
+                <v-row v-if="activityTypeIs('BS以外の講義')">
+                  <v-col cols="12">
+                      <v-select
+                        v-model="activity.lecture"
+                        label="講義内容"
+                        class="mt-0 pt-0"
+                        clearable
+                      ></v-select>
+                  </v-col>
+              </v-row>
+                  </v-expand-transition>
+
+                  <v-expand-transition>
+
+                <v-row v-if="activityTypeIs('対話') || activityTypeIs('BS') || activityTypeIs('BS以外の講義')">
+                  <v-col cols="12">
+                      <v-select
+                        v-model="activity.lecturer"
+                        :items="lecturerList"
+                        label="講師"
+                        class="mt-0 pt-0"
+                        clearable
+                      ></v-select>
+                  </v-col>
+                </v-row>
+
+                  </v-expand-transition>
+
+                  <v-expand-transition>
+                  <v-row v-if="activityTypeSelected">
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="activity.attendees"
+                        label="同席者"
+                        class="mt-0 pt-0"
+                        clearable
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                  </v-expand-transition>
+
+                  <v-expand-transition>
+
+                <v-row v-if="activityTypeSelected">
+                  <v-col cols="12">
+                    <v-textarea
+                      v-model="activity.comment"
+                      label="コメント"
+                      class="mt-0 pt-0"
+                      clearable
+                      rows="2"
+                      counter="1000"
+                      :rules="commentRules"
+                      auto-grow clearable
+                    ></v-textarea>
+                  </v-col>
+                  </v-row>
+                  </v-expand-transition>
+
+                  <v-expand-transition>
+
+                    <v-row v-if="activityTypeSelected">
+                        <v-col cols="12">
+                            <v-textarea
+                                v-model="activity.next"
+                                label="次回の予定"
+                                class="mt-0 pt-0"
+                                clearable
+                                rows="2"
+                                counter="300"
+                                :rules="nextActionRules"
+                                auto-grow clearable
+                            ></v-textarea>
+                        </v-col>
+                    </v-row>
+                  </v-expand-transition>
+
+                  <v-row style="height: 30px;"></v-row>
+                </v-container>
+
+              </v-card>
+            </v-dialog>
+            </v-form>
+          </v-row>
+    `
+});
+
+
 var ncList = {
     data: function () {
       return {
         pageTitle: 'NC一覧',
         ncListLoading: true,
         search: '',
-        item: -1, //デフォルトでアクティブにするアイテム（index）
-        items: [],
+        nc: -1, //デフォルトでアクティブにするアイテム（index）
+        ncList: [],
         twoLine: true,
         avatar: true,
         snackbar: {
@@ -183,20 +510,25 @@ var ncList = {
         },
         archiveTargetId: "",
         deleteDialog: false,
+        activityScheduleDialog: false,
+        activityReportDialog: false,
       }
     },
     created() {
+        var form = this.$route.query.form;
+        if (form == "activitySchedule") this.activityScheduleFormShow();
+        if (form == "activityReport") this.activityReportFormShow();
         this.getNcList();
     },
     computed: {
         filteredNcList(){
-        　return this.items.filter(nc => {
+        　return this.ncList.filter(nc => {
             var targetText = nc.name + nc.belongs + nc.memo;
             return targetText.includes(this.search);
         　})
         },
         ncEmpty() {
-            return this.items.length == 0 && !this.ncListLoading;
+            return this.ncList.length == 0 && !this.ncListLoading;
         },
     },
     methods: {
@@ -209,7 +541,7 @@ var ncList = {
 //            });
             this.ncListLoading = true
             axios.get("/api/nc/list").then(res => {
-                this.items = res.data;
+                this.ncList = res.data;
                 setTimeout(() => (this.ncListLoading = false), 700);
             });
         },
@@ -233,11 +565,28 @@ var ncList = {
         isArchiveTarget(ncId) {
             return this.archiveTargetId == ncId;
         },
-        success() {
+        registerSuccess() {
             this.snackbar.text = "登録しました。";
             this.snackbar.color = "success";
             this.snackbar.display = true;
             this.getNcList();
+        },
+        activityScheduleFormShow() {
+            this.activityScheduleDialog = true;
+        },
+        activityScheduleFormHide() {
+            this.activityScheduleDialog = false;
+        },
+        activityReportFormShow() {
+            this.activityReportDialog = true;
+        },
+        activityReportFormHide() {
+            this.activityReportDialog = false;
+        },
+        FormSubmitted() {
+            this.snackbar.text = "送信しました。";
+            this.snackbar.color = "success";
+            this.snackbar.display = true;
         },
         logout() {
             firebase.auth().signOut().then(()=>{
@@ -285,11 +634,17 @@ var ncList = {
                            v-bind="attrs"
                            v-on="on"
                          >
-                           <v-icon>mdi-account</v-icon>
+                           <v-icon>mdi-dots-vertical</v-icon>
                          </v-btn>
                        </template>
 
                        <v-list>
+                         <v-list-item @click="activityScheduleFormShow">
+                           <v-list-item-title>命予定入力フォーム</v-list-item-title>
+                         </v-list-item>
+                         <v-list-item @click="activityReportFormShow">
+                           <v-list-item-title>命報告フォーム</v-list-item-title>
+                         </v-list-item>
                          <v-list-item @click="logout">
                            <v-list-item-title>ログアウト</v-list-item-title>
                          </v-list-item>
@@ -314,7 +669,7 @@ var ncList = {
                 ></v-skeleton-loader>
 
             <v-list twoLine avatar v-show="!ncListLoading">
-                <v-list-item-group v-model="item">
+                <v-list-item-group v-model="nc">
                     <template v-for="(item, i) in filteredNcList">
                         <v-divider v-if="i!=0" inset></v-divider>
                         <v-expand-x-transition>
@@ -358,7 +713,13 @@ var ncList = {
             </v-list>
             </v-fade-transition>
 
-            <register-nc @registerNcSuccess="success"></register-nc>
+            <register-nc @registerNcSuccess="registerSuccess"></register-nc>
+            <activity-report-form
+                :activityReportDialog="activityReportDialog"
+                :ncList="ncList"
+                @activityReportFormHide="activityReportFormHide"
+                @registerFormSuccess="FormSubmitted"
+            ></activity-report-form>
 
             <v-dialog
               v-model="deleteDialog"

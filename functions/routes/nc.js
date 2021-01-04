@@ -54,6 +54,8 @@ router.post('/register/profile', function(req, res, next) {
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
     var profile = req.body.profile;
+    if (profile == null) throw Error("'profile' parameter is not exists.");
+
     var id = uuid.v4();
     profile["id"] = id;
     profile["avatar"] = { color: getAvatarColor() };

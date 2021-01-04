@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, 'routes')));
 // 「/api/nc」パスの配下の処理を記述
 app.use('/api/nc', require('./routes/nc.js'));
 app.use('/api/bs', require('./routes/bs.js'));
+app.use('/api/activity', require('./routes/activity.js'));
 //exports.app = functions.https.onCall(app);
 exports.app = functions.https.onRequest(app);
 

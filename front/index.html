@@ -2,21 +2,22 @@
 <html>
 <head>
 <!--    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">-->
-    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="src/materialDesign/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="src/dist/vuetify.min.css">
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <link rel="icon" type="image/x-icon" href="./favicon.ico"/>
     <title>NC History</title>
 </head>
-<script type="text/javascript">
-
-    var params = (new URL(document.location)).searchParams;
-    var formName = params.get('form');
-    if (formName != null) window.location.href = "/template/" + formName + ".html";
-
-</script>
 <style>
+    #loginLoader {
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
     [v-cloak] {
         visibility: hidden;
     }
@@ -58,7 +59,13 @@
 <script src="/__/firebase/init.js"></script>
 <script type="text/javascript">
     firebase.auth().onAuthStateChanged(function(user) {
-        if (user == null) window.location.href = "/template/login.html";
+        if (user != null) return;
+
+        var location = document.location;
+        var redirectPath = location.pathname + location.search + location.hash;
+
+        var loginPath = "/template/login.html?redirectPath=" + redirectPath;
+        window.location.href = loginPath;
     });
 </script>
 

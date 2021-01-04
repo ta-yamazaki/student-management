@@ -40,6 +40,9 @@
 
 
 <script type="text/javascript">
+    var searchParams = (new URL(document.location)).searchParams;
+    var redirectPath = searchParams.get("redirectPath");
+
       // FirebaseUI config.
     var uiConfig = {
         callbacks: {
@@ -51,7 +54,7 @@
             }
         },
         signInFlow: 'popup',
-        signInSuccessUrl: '/',
+        signInSuccessUrl: redirectPath,
         signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID]
     };
 

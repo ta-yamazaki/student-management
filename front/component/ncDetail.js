@@ -164,9 +164,6 @@ Vue.component('nc-detail', {
             })
             .catch( error => { console.log(error); })
             .finally( () => { this.loading = false; });
-
-
-
         },
         formReset() {
             this.$refs.form.resetValidation();

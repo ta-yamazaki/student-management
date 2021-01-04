@@ -16,4 +16,4 @@ RUN npm install
 WORKDIR /app
 CMD npm run use && npm run emulate
 
-EXPOSE 4000 5000 5001 8080
+EXPOSE 4000 5000 5001 8080 9099

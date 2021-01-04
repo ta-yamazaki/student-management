@@ -7,6 +7,8 @@
         "function": "app"
       }
     ],
+    "redirects": [
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",
