@@ -188,20 +188,31 @@ Vue.component('activity-report-form', {
                 type: "",
                 event: "",
                 lecture: "",
-                lecturer: "",
+                lecturerId: "",
                 attendees: "",
                 comment: "",
                 next: "",
-                idOfReportingUser:"",
+                createdBy: { uid: "", displayName: "" },
             },
             activityTypeList: [ "器", "対話", "BS", "BS以外の講義" ],
             bsList: bsList,
+            eventList: [],
             lecturerList: [],
+            lectureListExceptBs: [],
             calendar: false,
             valid: false,
             ncRules: [ v => !!v || '必須入力です。' ],
             dateRules: [ v => !!v || '必須入力です。' ],
             typeRules: [ v => !!v || '必須入力です。' ],
+            eventRules: [
+                v => !!v || '必須入力です。',
+            ],
+            lectureRules: [
+                v => !!v || '必須入力です。',
+            ],
+            lecturerRules: [
+                v => !!v || '必須入力です。',
+            ],
             commentRules: [
                 v => !!v || '必須入力です。',
                 v => v.length <= 1000 || '1000文字以下で入力してください。',
@@ -213,11 +224,11 @@ Vue.component('activity-report-form', {
             loading: false,
         }
     },
-    props: ["activityReportDialog", "ncList"],
+    props: ["activityReportDialog", "ncList", "loginUser"],
     created() {
-        firebase.auth().onAuthStateChanged(function(user) {
-            this.idOfReportingUser = user.uid;
-        });
+            this.getEventList();
+            this.getLecturerList();
+            this.getLectureListExceptBs();
     },
     computed: {
         activityTypeSelected() {
@@ -225,15 +236,37 @@ Vue.component('activity-report-form', {
         },
     },
     methods: {
+        getEventList() {
+            axios.get("/api/activity/events").then(res => {
+                this.eventList = res.data;
+            });
+        },
+        getLecturerList() {
+            axios.get("/api/user/list").then(res => {
+                this.lecturerList = res.data;
+//                axios.get("/api/activity/lecturers").then(res => {
+//                    var tempList = this.lecturerList.concat(res.data)
+//                    this.lecturerList = Array.from(new Set(tempList));
+//                });
+            });
+        },
+        getLectureListExceptBs() {
+            axios.get("/api/activity/lectures-except-bs").then(res => {
+                this.lectureListExceptBs = res.data;
+            });
+        },
         submitReport() {
             var isValid = this.$refs.form.validate();
             if (!isValid) return;
 
             this.loading = true;
+
+            this.activity.createdBy.uid = this.loginUser.uid;
+            this.activity.createdBy.displayName = this.loginUser.displayName;
+
             axios.post("/api/activity/report", { activity: this.activity })
             .then( res => {
-                this.$emit('registerFormSuccess');
-                this.dialog = false;
+                this.$emit('activityReportSuccess');
                 this.formReset();
             })
             .catch( error => {
@@ -241,6 +274,9 @@ Vue.component('activity-report-form', {
             })
             .finally( () => {
                 this.loading = false;
+                this.getEventList();
+                this.getLecturerList();
+                this.getLectureListExceptBs();
             });
         },
         cancel() {
@@ -254,11 +290,11 @@ Vue.component('activity-report-form', {
                 type: "",
                 event: "",
                 lecture: "",
-                lecturer: "",
+                lecturerId: "",
                 attendees: "",
                 comment: "",
                 next: "",
-                idOfReportingUser:"",
+                createdBy: { uid: "", displayName: "" },
             };
             this.$refs.form.resetValidation();
         },
@@ -266,8 +302,10 @@ Vue.component('activity-report-form', {
             return type == this.activity.type;
         },
         changeNewcomerId(selected) {
-        console.log(selected);
             this.activity.newcomerId = selected.value;
+        },
+        changeLecturerId(selected) {
+            this.activity.lecturerId = selected.value;
         },
     },
     watch: {
@@ -380,12 +418,17 @@ Vue.component('activity-report-form', {
                   <v-expand-transition>
                   <v-row v-if="activityTypeIs('器')">
                     <v-col cols="12">
-                      <v-text-field
-                        v-model="activity.event"
-                        label="器名"
-                        class="mt-0 pt-0"
-                        clearable
-                      ></v-text-field>
+                          <v-combobox
+                            v-model="activity.event"
+                            :items="eventList"
+                            dense
+                            hide-no-data
+                            label="器名"
+                            class="mt-0 pt-0"
+                            :rules="eventRules"
+                            clearable
+                            hint="リストにない場合は直接入力可能"
+                          ></v-combobox>
                     </v-col>
                   </v-row>
                   </v-expand-transition>
@@ -393,41 +436,54 @@ Vue.component('activity-report-form', {
                   <v-expand-transition>
                 <v-row v-if="activityTypeIs('BS')">
                   <v-col cols="12">
-                      <v-select
-                        v-model="activity.lecture"
-                        :items="bsList"
-                        label="講義"
-                        class="mt-0 pt-0"
-                        clearable
-                      ></v-select>
-                  </v-col>
-              </v-row>
+                          <v-autocomplete
+                            v-model="activity.lecture"
+                            :items="bsList"
+                            dense
+                            hide-no-data
+                            label="講義"
+                            class="mt-0 pt-0"
+                            :rules="lecturerRules"
+                            clearable
+                          ></v-autocomplete>
+                      </v-col>
+                  </v-row>
                   </v-expand-transition>
 
                   <v-expand-transition>
                 <v-row v-if="activityTypeIs('BS以外の講義')">
                   <v-col cols="12">
-                      <v-select
-                        v-model="activity.lecture"
-                        label="講義内容"
-                        class="mt-0 pt-0"
-                        clearable
-                      ></v-select>
-                  </v-col>
-              </v-row>
+                          <v-combobox
+                            v-model="activity.lecture"
+                            :items="lectureListExceptBs"
+                            dense
+                            hide-no-data
+                            label="講義内容"
+                            class="mt-0 pt-0"
+                            :rules="lectureRules"
+                            clearable
+                            hint="リストにない場合は直接入力可能"
+                          ></v-combobox>
+                      </v-col>
+                  </v-row>
                   </v-expand-transition>
 
                   <v-expand-transition>
 
                 <v-row v-if="activityTypeIs('対話') || activityTypeIs('BS') || activityTypeIs('BS以外の講義')">
                   <v-col cols="12">
-                      <v-select
-                        v-model="activity.lecturer"
-                        :items="lecturerList"
-                        label="講師"
-                        class="mt-0 pt-0"
-                        clearable
-                      ></v-select>
+                          <v-combobox
+                            :items="lecturerList"
+                            item-text="displayName"
+                            item-value="id"
+                            dense
+                            hide-no-data
+                            label="講師"
+                            class="mt-0 pt-0"
+                            :rules="lecturerRules"
+                            hint="リストにない場合は講師の方がユーザー登録する必要があります。"
+                            @change="changeLecturerId"
+                          ></v-combobox>
                   </v-col>
                 </v-row>
 
@@ -512,13 +568,25 @@ var ncList = {
         deleteDialog: false,
         activityScheduleDialog: false,
         activityReportDialog: false,
+        loginUser: {
+            uid: "aaaa",
+            displayName: "",
+            email: "",
+        },
       }
     },
     created() {
+        this.getNcList();
+
         var form = this.$route.query.form;
         if (form == "activitySchedule") this.activityScheduleFormShow();
         if (form == "activityReport") this.activityReportFormShow();
-        this.getNcList();
+
+        firebase.auth().onAuthStateChanged((user) => {
+            this.loginUser.uid = user.uid;
+            this.loginUser.displayName = user.displayName;
+            this.loginUser.email = user.email;
+        });
     },
     computed: {
         filteredNcList(){
@@ -583,10 +651,11 @@ var ncList = {
         activityReportFormHide() {
             this.activityReportDialog = false;
         },
-        FormSubmitted() {
+        activityReportSuccess() {
             this.snackbar.text = "送信しました。";
             this.snackbar.color = "success";
             this.snackbar.display = true;
+            this.activityReportDialog = false;
         },
         logout() {
             firebase.auth().signOut().then(()=>{
@@ -717,8 +786,9 @@ var ncList = {
             <activity-report-form
                 :activityReportDialog="activityReportDialog"
                 :ncList="ncList"
+                :loginUser="loginUser"
                 @activityReportFormHide="activityReportFormHide"
-                @registerFormSuccess="FormSubmitted"
+                @activityReportSuccess="activityReportSuccess"
             ></activity-report-form>
 
             <v-dialog
