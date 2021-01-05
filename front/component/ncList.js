@@ -732,9 +732,9 @@ var ncList = {
                 {{ snackbar.text }}
             </v-snackbar>
 
-                <v-skeleton-loader v-for="i in 5" :key="i"
+                <v-skeleton-loader
                     v-show="ncListLoading"
-                    type="list-item-avatar-two-line"
+                    type="list-item-avatar-two-line@5"
                 ></v-skeleton-loader>
 
             <v-list twoLine avatar v-show="!ncListLoading">

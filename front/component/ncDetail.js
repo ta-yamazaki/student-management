@@ -23,7 +23,7 @@ Vue.component('bs-status', {
         testimonyList: [],
         testimonyDone: [],
         updatedAt: "",
-        loading: false,
+        loading: true,
     }
   },
     created() {
@@ -35,9 +35,14 @@ Vue.component('bs-status', {
         axios.get("/api/bs/status?ncId=" + ncId).then(res => {
             var progress = res.data.progress;
             this.progress = Array.isArray(progress) ? progress : [];
+
             var testimonyDone = res.data.testimony;
             this.testimonyDone = Array.isArray(testimonyDone) ? testimonyDone : [];
-            var milliseconds = res.data.updatedAt._seconds * 1000;
+            this.loading = false;
+
+            var updatedAt = res.data.updatedAt;
+            if (updatedAt == null) return;
+            var milliseconds = updatedAt._seconds * 1000;
             this.updatedAt = moment(new Date(milliseconds)).format('YYYY年MM月DD日 HH:mm');
         });
     },
@@ -74,6 +79,7 @@ Vue.component('bs-status', {
                    v-model="testimonyDone"
                    :label="testimony" :value="testimony"
                    class="my-0 py-0"
+                   :disabled="loading"
                   ></v-checkbox>
                 </v-col>
             </v-row>
@@ -91,9 +97,11 @@ Vue.component('bs-status', {
                     class="my-0 py-0"
                 >
                   <v-checkbox
+                  loading
                    v-model="progress"
                    :label="bs" :value="bs"
                    class="my-0 py-0"
+                   :disabled="loading"
                   ></v-checkbox>
                 </v-col>
             </v-row>
@@ -126,7 +134,7 @@ Vue.component('nc-detail', {
             createdAt: "",
             updatedAt: "",
         },
-        loading: false,
+        loading: true,
         gradeList: ["1年", "2年", "3年", "4年", "M1", "M2", "社会人"],
         nameRules: [
             v => !!v || '必須入力です。',
@@ -141,7 +149,11 @@ Vue.component('nc-detail', {
 
         axios.get("/api/nc/relation?ncId=" + ncId).then(res => {
             this.relation = res.data;
-            var milliseconds = this.relation.updatedAt._seconds * 1000;
+            this.loading = false;
+
+            var updatedAt = res.data.updatedAt;
+            if (updatedAt == null) return;
+            var milliseconds = updatedAt._seconds * 1000;
             this.relation.updatedAt = moment(new Date(milliseconds)).format('YYYY年MM月DD日 HH:mm');
         });
     },
@@ -170,11 +182,6 @@ Vue.component('nc-detail', {
         },
     },
     filters: {
-//        moment(value) {
-//            if (value == null || value == "") return "";
-//            var milliseconds = value._seconds * 1000;
-//            return moment(new Date(milliseconds)).format('YYYY年MM月DD日 HH:mm');
-//        },
     },
     watch: {
     },

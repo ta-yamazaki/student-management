@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!--    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">-->
+<!--    <link rel="stylesheet" href="src/materialDesign/css/materialdesignicons.min.css">-->
+<!--    <link rel="stylesheet" href="src/dist/vuetify.min.css">-->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico"/>
+    <title>NC History</title>
+</head>
+<style>
+
+</style>
+
+<body>
+<h4></h4>
+
+<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<!--<script src="/__/firebase/8.1.1/firebase-app.js"></script>-->
+<!--<script src="/__/firebase/8.1.1/firebase-auth.js"></script>-->
+<!--<script src="/__/firebase/8.1.1/firebase-functions.js"></script>-->
+<!-- Initialize Firebase -->
+<!--<script src="/__/firebase/init.js"></script>-->
+<!--<script type="text/javascript">-->
+<!--    firebase.auth().onAuthStateChanged(function(user) {-->
+<!--        if (user != null) return;-->
+
+<!--        var location = document.location;-->
+<!--        var redirectPath = location.pathname + location.search + location.hash;-->
+
+<!--        var loginPath = "/template/login.html?redirectPath=" + redirectPath;-->
+<!--        window.location.href = loginPath;-->
+<!--    });-->
+<!--</script>-->
+
+<!--<script type="text/javascript" src="src/dist/vue.js"></script>-->
+<!--&lt;!&ndash;<script type="text/javascript" src="src/dist/vue.min.js"></script>&ndash;&gt;-->
+<!--<script type="text/javascript" src="src/dist/vuetify.js"></script>-->
+<!--&lt;!&ndash;<script type="text/javascript" src="src/dist/vuetify.min.js"></script>&ndash;&gt;-->
+<!--<script src="https://unpkg.com/axios/dist/axios.min.js"></script>-->
+
+<!--<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>-->
+<!--<script type="text/javascript" src="src/dist/moment.js"></script>-->
+
+<!--<script type="module" src="routes/routes.js"></script>-->
+<script type="text/javascript">
+    var redirectPath = location.pathname + location.search + location.hash;
+    window.location.href = "/?routerLink=" + redirectPath;
+</script>
+
+
+
+</body>
+</html>

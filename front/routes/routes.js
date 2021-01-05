@@ -12,9 +12,16 @@ var router = new VueRouter({
         { path: "", component: ncList },
         { path: "/", component: ncList },
         { path: "/nc/list", component: ncList },
-        { path: "/nc/detail", component: ncDetail }
+        { path: "/nc/detail", component: ncDetail },
+        { path: "/**", component: ncList }
     ]
 });
+
+var params = (new URL(document.location)).searchParams;
+var routerLink = params.get('routerLink');
+if (routerLink != null) router.push(routerLink);
+
+
 // routerをマウント
 new Vue({
     el: '#app',
