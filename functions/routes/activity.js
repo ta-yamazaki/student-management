@@ -11,6 +11,23 @@ const uuid = require('uuid');
 /**
  * 参照系
  */
+router.get('/list', function(req, res, next) {
+    var ncId = req.query.ncId;
+
+    activityCollection.where('newcomerId', '==', ncId).get()
+    .then(function(querySnapshot) {
+        var activityList = [];
+        querySnapshot.forEach(function(doc) {
+            activityList.push(doc.data());
+        });
+        res.send(activityList);
+    }).catch(function() {
+          res.send([]);
+    }).finally(function() {
+    });
+
+});
+
 router.get('/events', function(req, res, next) {
     activityCollection.where('type', '==', '器').get()
     .then(function(querySnapshot) {
@@ -25,19 +42,19 @@ router.get('/events', function(req, res, next) {
     });
 });
 
-router.get('/lecturers', function(req, res, next) {
-    activityCollection.where('type', '!=', '器').get()
-    .then(function(querySnapshot) {
-        var lecturerList = [];
-        querySnapshot.forEach(function(doc) {
-            lecturerList.push(doc.get("lecturer"));
-        });
-        res.send(lecturerList);
-    }).catch(function() {
-          res.send([]);
-    }).finally(function() {
-    });
-});
+//router.get('/lecturers', function(req, res, next) {
+//    activityCollection.where('type', '!=', '器').get()
+//    .then(function(querySnapshot) {
+//        var lecturerList = [];
+//        querySnapshot.forEach(function(doc) {
+//            lecturerList.push(doc.get("lecturer"));
+//        });
+//        res.send(lecturerList);
+//    }).catch(function() {
+//          res.send([]);
+//    }).finally(function() {
+//    });
+//});
 
 router.get('/lectures-except-bs', function(req, res, next) {
     activityCollection.where('type', '==', 'BS以外の講義').get()

@@ -301,12 +301,6 @@ Vue.component('activity-report-form', {
         activityTypeIs(type) {
             return type == this.activity.type;
         },
-        changeNewcomerId(selected) {
-            this.activity.newcomerId = selected.value;
-        },
-        changeLecturerId(selected) {
-            this.activity.lecturerId = selected.value;
-        },
     },
     watch: {
     },
@@ -322,7 +316,7 @@ Vue.component('activity-report-form', {
               transition="dialog-bottom-transition"
             >
             <v-list>
-                <v-app-bar fixed dark color="primary">
+                <v-app-bar fixed dark color="primary" dense>
                   <v-btn type="button" icon dark @click="cancel">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
@@ -346,6 +340,7 @@ Vue.component('activity-report-form', {
                     <v-col cols="12">
 
                             <v-autocomplete
+                              v-model="activity.newcomerId"
                               :items="ncList"
                               :item-text="function(nc) { return nc.name + ' - ' + nc.belongs + nc.grade }"
                               item-value="id"
@@ -353,7 +348,6 @@ Vue.component('activity-report-form', {
                               label="命 *"
                               class="mt-0 pt-0"
                               :rules="ncRules"
-                              @change="changeNewcomerId"
                             ></v-autocomplete>
 
                     </v-col>
@@ -434,6 +428,21 @@ Vue.component('activity-report-form', {
                   </v-expand-transition>
 
                   <v-expand-transition>
+                  <v-row v-if="activityTypeIs('対話')">
+                    <v-col cols="12">
+                        <v-text-field
+                         v-model="activity.lecture"
+                          dense
+                          label="対話内容"
+                          class="mt-0 pt-0"
+                          :rules="lecturerRules"
+                          clearable
+                        ></v-text-field>
+                    </v-col>
+                  </v-row>
+                  </v-expand-transition>
+
+                  <v-expand-transition>
                 <v-row v-if="activityTypeIs('BS')">
                   <v-col cols="12">
                           <v-autocomplete
@@ -472,18 +481,18 @@ Vue.component('activity-report-form', {
 
                 <v-row v-if="activityTypeIs('対話') || activityTypeIs('BS') || activityTypeIs('BS以外の講義')">
                   <v-col cols="12">
-                          <v-combobox
+                          <v-autocomplete
+                            v-model="activity.lecturerId"
+                            class="mt-0 pt-0"
                             :items="lecturerList"
                             item-text="displayName"
                             item-value="id"
                             dense
                             hide-no-data
                             label="講師"
-                            class="mt-0 pt-0"
                             :rules="lecturerRules"
                             hint="リストにない場合は講師の方がユーザー登録する必要があります。"
-                            @change="changeLecturerId"
-                          ></v-combobox>
+                          ></v-autocomplete>
                   </v-col>
                 </v-row>
 
@@ -494,7 +503,7 @@ Vue.component('activity-report-form', {
                     <v-col cols="12">
                       <v-text-field
                         v-model="activity.attendees"
-                        label="同席者"
+                        label="迎え"
                         class="mt-0 pt-0"
                         clearable
                       ></v-text-field>
@@ -547,7 +556,6 @@ Vue.component('activity-report-form', {
           </v-row>
     `
 });
-
 
 var ncList = {
     data: function () {
@@ -669,11 +677,7 @@ var ncList = {
     template: `
         <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto">
             <v-list>
-                <v-app-bar
-                    dense fixed
-                    elevation="3" elevate-on-scroll
-                    color="grey lighten-5" height="38"
-                >
+                <v-app-bar dense fixed dark color="info">
                 <!--  <v-app-bar-nav-icon>
                     <v-img
                         src="./images/logo-square.png"

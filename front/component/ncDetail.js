@@ -186,7 +186,7 @@ Vue.component('nc-detail', {
     watch: {
     },
   template: `
-      <v-card-text>
+      <v-card-text class="mt-2">
 
         <v-form ref="form" v-model="valid"
              lazy-validation
@@ -296,6 +296,115 @@ Vue.component('nc-detail', {
       `
 });
 
+Vue.component('nc-activities', {
+  data: function () {
+    return {
+        ncId: "",
+        activities: [
+            {
+                createdBy: "createdBy",
+                newcomerId: "newcomerId",
+                date: "2021-01-03",
+                type: "講義",
+                event: "器名",
+                lecture: "lecturelecture",
+                lecturerId: "lecturerId",
+                attendees: "迎え",
+                comment: "comment\ncomments2",
+                next: "次回のよてい",
+                createdBy: { displayName: "ざっきー", uid: "YeOJj0RS7ggCIF02udxxZ5avReW2" },
+                createdAt: "登録日時",
+                updatedAt: "更新日時",
+            },
+        ],
+        userList: [],
+        loading: true,
+    }
+  },
+    created() {
+        axios.get("/api/user/list").then(res => {
+            this.userList = res.data;
+        });
+
+        const ncId = this.$route.query.ncId;
+        this.ncId = ncId;
+
+        axios.get("/api/activity/list?ncId=" + ncId).then(res => {
+            this.activities = res.data;
+            this.getLecturerName(this.activities);
+            this.loading = false;
+        });
+    },
+    computed: {
+    },
+    methods: {
+        lecturerWithLabel(activity) {
+            return "講師：" + activity.lecturer;
+        },
+        attendeesWithLabel(activity) {
+            return "迎え：" + activity.attendees;
+        },
+        activitySubtitle(activity) {
+            if (activity.lecturer == null) return "";
+            return this.lecturerWithLabel(activity) + "　" + this.attendeesWithLabel(activity);
+        },
+        activityTitle(activity) {
+            if(activity.type == "器") return "器 - " + activity.event;
+            if(activity.type == "対話") return "対話 - " + activity.lecture;
+            return "講義 - " + activity.lecture;
+        },
+        getLecturerName(activities) {
+            activities.forEach(activity => {
+                var targetId = activity.lecturerId;
+                this.userList.forEach(user => {
+                    activity.lecturer = user.displayName;
+                });
+            });
+        },
+    },
+    filters: {
+    },
+    watch: {
+    },
+    template: `
+        <v-list>
+            <v-list-group
+              v-for="(activity, i) in activities"
+              :key="i"
+              v-model="activity.active"
+              :style="activity.active ? 'background-color:#F2F7FD;' : ''"
+            >
+
+                <template v-slot:activator three-line>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="activityTitle(activity)" style="font-size: 14px;" class="whiteSpaceForList"></v-list-item-title>
+                    <v-list-item-subtitle v-text="activitySubtitle(activity)" style="font-size: 10px;" class="whiteSpaceForList"></v-list-item-subtitle>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                      <v-list-item-action-text v-text="activity.date" style="font-size: 9px;"></v-list-item-action-text>
+                      <v-icon></v-icon>
+                  </v-list-item-action>
+                </template>
+
+                    <v-divider class="mx-5"></v-divider>
+                <v-list-item class="px-5" dense>
+                    <v-list-item-content>
+                        <v-list-item-title>■コメント</v-list-item-title>
+                        <v-list-item-title class="whiteSpaceForList">{{ activity.comment }}</v-list-item-title>
+                        <v-list-item-title class="mt-2">■Next Action</v-list-item-title>
+                        <v-list-item-title class="whiteSpaceForList">{{ activity.next }}</v-list-item-title>
+                        <v-list-item-subtitle v-text="'記入者：' + activity.createdBy.displayName" style="font-size: 10px;" class="mt-2"></v-list-item-subtitle>
+                    </v-list-item-content>
+                </v-list-item>
+
+            </v-list-group>
+        </v-list>
+    `
+});
+
+
+
+
 var ncDetail = {
     data: function () {
         return {
@@ -339,11 +448,7 @@ var ncDetail = {
         <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto">
 
             <v-list>
-                <v-app-bar
-                    dense fixed
-                    elevation="3" elevate-on-scroll
-                    color="grey lighten-5" height="38"
-                >
+                <v-app-bar dense fixed dark color="info">
                     <v-btn
                       icon
                       v-show="$vuetify.breakpoint.xs || $vuetify.breakpoint.sm"
@@ -364,20 +469,21 @@ var ncDetail = {
                 更新しました。
             </v-snackbar>
 
-           <v-card-text>
-                <v-tabs-items v-model="tab">
-                  <v-tab-item>
-                    <v-card flat>
-                          <bs-status @updateSuccess="updateSuccess"></bs-status>
-                    </v-card>
-                  </v-tab-item>
-                  <v-tab-item>
-                    <v-card flat>
-                          <nc-detail :profile="profile" @updateSuccess="updateSuccess"></nc-detail>
-                    </v-card>
-                  </v-tab-item>
-                </v-tabs-items>
-            </v-card-text>
+            <v-tabs-items v-model="tab" class="mt-3">
+              <v-tab-item>
+                <v-card flat>
+                      <bs-status @updateSuccess="updateSuccess"></bs-status>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item>
+                <v-card flat>
+                      <nc-detail :profile="profile" @updateSuccess="updateSuccess"></nc-detail>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item>
+                      <nc-activities></nc-activities>
+              </v-tab-item>
+            </v-tabs-items>
 
             <v-bottom-navigation grow fixed height="48">
                 <v-tabs
@@ -388,6 +494,7 @@ var ncDetail = {
                 >
                     <v-tab>BS状況</v-tab>
                     <v-tab>プロフィール</v-tab>
+                    <v-tab>対話・講義</v-tab>
                 </v-tabs>
             </v-bottom-navigation>
         </v-flex>
