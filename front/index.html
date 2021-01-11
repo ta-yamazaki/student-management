@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="src/dist/vuetify.min.css">
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-    <link rel="icon" type="image/x-icon" href="./favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
     <title>NC History</title>
 </head>
 <style>
@@ -16,6 +16,11 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+    }
+
+    .v-list .v-list-item a {
+        text-decoration: none !important;
+        color: black !important;
     }
 
     [v-cloak] {
@@ -37,6 +42,11 @@
     .whiteSpaceForList {
         text-overflow: inherit;
         white-space: pre-wrap;
+    }
+
+    .v-list-group > .v-list-group__header.v-list-item > .v-list-item__icon.v-list-group__header__append-icon {
+        min-width: 0;
+        margin-left: 10px;
     }
 </style>
 
@@ -81,15 +91,6 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
-<script type="text/javascript">
-    function routerRedirect() {
-        var params = (new URL(document.location)).searchParams;
-        var routerLink = params.get('routerLink');
-        if (routerLink == null) return;
-        router.push(routerLink);
-    }
-    routerRedirect();
-</script>
 
 <script type="text/javascript" src="src/dist/moment.js"></script>
 

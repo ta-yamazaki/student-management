@@ -192,7 +192,7 @@ Vue.component('activity-report-form', {
                 attendees: "",
                 comment: "",
                 next: "",
-                createdBy: { uid: "", displayName: "" },
+                createdBy: { uid: "", name: "" },
             },
             activityTypeList: [ "器", "対話", "BS", "BS以外の講義" ],
             bsList: bsList,
@@ -262,7 +262,7 @@ Vue.component('activity-report-form', {
             this.loading = true;
 
             this.activity.createdBy.uid = this.loginUser.uid;
-            this.activity.createdBy.displayName = this.loginUser.displayName;
+            this.activity.createdBy.name = this.loginUser.name;
 
             axios.post("/api/activity/report", { activity: this.activity })
             .then( res => {
@@ -294,7 +294,7 @@ Vue.component('activity-report-form', {
                 attendees: "",
                 comment: "",
                 next: "",
-                createdBy: { uid: "", displayName: "" },
+                createdBy: { uid: "", name: "" },
             };
             this.$refs.form.resetValidation();
         },
@@ -485,8 +485,8 @@ Vue.component('activity-report-form', {
                             v-model="activity.lecturerId"
                             class="mt-0 pt-0"
                             :items="lecturerList"
-                            item-text="displayName"
-                            item-value="id"
+                            item-text="name"
+                            item-value="uid"
                             dense
                             hide-no-data
                             label="講師"
@@ -499,7 +499,7 @@ Vue.component('activity-report-form', {
                   </v-expand-transition>
 
                   <v-expand-transition>
-                  <v-row v-if="activityTypeSelected">
+                  <v-row v-if="activityTypeIs('対話') || activityTypeIs('BS') || activityTypeIs('BS以外の講義')">
                     <v-col cols="12">
                       <v-text-field
                         v-model="activity.attendees"
@@ -561,10 +561,11 @@ var ncList = {
     data: function () {
       return {
         pageTitle: 'NC一覧',
-        ncListLoading: true,
+        ncListLoading: false,
         search: '',
         nc: -1, //デフォルトでアクティブにするアイテム（index）
         ncList: [],
+        favoriteNcIds: [],
         twoLine: true,
         avatar: true,
         snackbar: {
@@ -578,12 +579,14 @@ var ncList = {
         activityReportDialog: false,
         loginUser: {
             uid: "aaaa",
-            displayName: "",
+            name: "",
             email: "",
         },
       }
     },
     created() {
+        this.ncListLoading = true;
+
         this.getNcList();
 
         var form = this.$route.query.form;
@@ -592,16 +595,28 @@ var ncList = {
 
         firebase.auth().onAuthStateChanged((user) => {
             this.loginUser.uid = user.uid;
-            this.loginUser.displayName = user.displayName;
+            this.loginUser.name = user.displayName;
             this.loginUser.email = user.email;
+
+            this.getFavorites();
+            setTimeout(() => (this.ncListLoading = false), 300)
         });
     },
     computed: {
         filteredNcList(){
-        　return this.ncList.filter(nc => {
-            var targetText = nc.name + nc.belongs + nc.memo;
-            return targetText.includes(this.search);
-        　})
+            if (this.search == null || this.search == "")
+                return this.ncList
+                    .sort((nc1, nc2) => { return nc1.name > nc2.name ? -1 : 1; })
+                    .sort((nc) => { return this.isFavorite(nc) ? -1 : 1; })
+                    ;
+
+            return this.ncList.filter(nc => {
+                var targetText = nc.name + nc.belongs + nc.memo;
+                return targetText.includes(this.search);
+            })
+            .sort((nc1, nc2) => { return nc1.name > nc2.name ? -1 : 1; })
+            .sort((nc) => { return this.isFavorite(nc) ? -1 : 1; })
+            ;
         },
         ncEmpty() {
             return this.ncList.length == 0 && !this.ncListLoading;
@@ -615,14 +630,34 @@ var ncList = {
 //            getNcList().then(function(res) {
 //                this.items = res.data;
 //            });
-            this.ncListLoading = true
             axios.get("/api/nc/list").then(res => {
                 this.ncList = res.data;
-                setTimeout(() => (this.ncListLoading = false), 700);
             });
         },
         iconText(name) {
             return name.charAt(0);
+        },
+        getFavorites() {
+            axios.get("/api/favorite/list?userId=" + this.loginUser.uid).then(res => {
+                this.favoriteNcIds = res.data;
+            });
+        },
+        favorite(nc) {
+            var requestPath = "/api/favorite/add";
+            axios.post(requestPath, { ncId: nc.id, userId: this.loginUser.uid })
+            .then(res => {
+                this.getFavorites()
+            });
+        },
+        disfavorite(nc) {
+            var requestPath = "/api/favorite/remove";
+            axios.post(requestPath, { ncId: nc.id, userId: this.loginUser.uid })
+            .then(res => {
+                this.getFavorites()
+            });
+        },
+        isFavorite(nc) {
+            return this.favoriteNcIds.includes(nc.id);
         },
         archiveShow(ncId) {
             this.archiveTargetId = ncId;
@@ -718,6 +753,13 @@ var ncList = {
                          <v-list-item @click="activityReportFormShow">
                            <v-list-item-title>命報告フォーム</v-list-item-title>
                          </v-list-item>
+                         <v-divider></v-divider>
+                         <v-list-item>
+                             <v-list-item-title>
+                                <v-icon>mdi-account</v-icon>
+                                {{ loginUser.name }}
+                             </v-list-item-title>
+                         </v-list-item>
                          <v-list-item @click="logout">
                            <v-list-item-title>ログアウト</v-list-item-title>
                          </v-list-item>
@@ -743,48 +785,61 @@ var ncList = {
 
             <v-list twoLine avatar v-show="!ncListLoading">
                 <v-list-item-group v-model="nc">
-                    <template v-for="(item, i) in filteredNcList">
+                    <template v-for="(nc, i) in filteredNcList">
                         <v-divider v-if="i!=0" inset></v-divider>
-                        <v-expand-x-transition>
-                            <v-card
-                                flat
-                                v-show="isArchiveTarget(item.id)"
-                                class="red lighten-1 center"
-                                  height="72"
-                                  width="80"
-                                  style="margin: 0 ; text-align: center; float:right;"
-                                  @click="deleteDialog = true"
-                            >
-                               <v-icon color="white" style="height:100%;">mdi-trash-can-outline</v-icon>
-                            </v-card>
-                        </v-expand-x-transition>
+
                         <v-list-item
-                            :key="item.id"
-                            :id="item.id"
-                            :to="{ path: '/nc/detail', query: {ncId: item.id} }"
-                            v-touch="{ left: () => archiveShow(item.id), right: () => archiveHide() }"
+                            :key="nc.id"
+                            :id="nc.id"
+                            v-touch="{ left: () => archiveShow(nc.id), right: () => archiveHide() }"
                         >
-                            <v-list-item-avatar v-if="item.avatar">
-                                <v-avatar :color="item.avatar.color">
-                                  <span class="white--text headline">{{ iconText(item.name) }}</span>
-                                </v-avatar>
+                            <v-list-item-avatar v-if="nc.avatar">
+                                <router-link :to="{ path: '/nc/detail', query: {ncId: nc.id} }">
+                                    <v-avatar :color="nc.avatar.color">
+                                  <span class="white--text headline">{{ iconText(nc.name) }}</span>
+                                    </v-avatar>
+                                </router-link>
                             </v-list-item-avatar>
+
                             <v-list-item-content>
-                                <v-list-item-title v-html="item.name"></v-list-item-title>
-                                <v-list-item-subtitle v-if="twoLine || threeLine" v-html="item.belongs + item.grade"></v-list-item-subtitle>
+                                <router-link :to="{ path: '/nc/detail', query: {ncId: nc.id} }">
+                                    <v-list-item-title v-html="nc.name"></v-list-item-title>
+                                    <v-list-item-subtitle v-if="twoLine || threeLine" v-html="nc.belongs + nc.grade"></v-list-item-subtitle>
+                                </router-link>
                             </v-list-item-content>
+
+                            <v-list-item-action>
+                              <v-btn icon>
+                                <v-icon v-if="!isFavorite(nc)" color="grey lighten-1" @click="favorite(nc)">
+                                    mdi-star-outline
+                                </v-icon>
+                                <v-icon v-else color="yellow darken-3" @click="disfavorite(nc)">
+                                    mdi-star
+                                </v-icon>
+                              </v-btn>
+                            </v-list-item-action>
+
+                            <v-expand-x-transition>
+                                <v-card
+                                    flat
+                                    v-show="isArchiveTarget(nc.id)"
+                                    class="orange darken-3 center"
+                                      height="72" width="80"
+                                      style="text-align: center; margin: 0 -16px 0 16px;"
+                                      @click="deleteDialog = true"
+                                >
+                                   <v-card-text style="height:100%;">
+                                        <v-icon color="white">
+                                            mdi-archive-arrow-down
+                                        </v-icon>
+                                        <p style="color:white; white-space:nowrap">非表示</p>
+                                   </v-card-text>
+                                </v-card>
+                            </v-expand-x-transition>
                         </v-list-item>
                     </template>
                 </v-list-item-group>
             </v-list>
-
-            <v-fade-transition>
-            <v-list v-show="ncEmpty">
-                <v-sheet width="100%" height="100vh" align="center">
-                      命情報が登録されていません。
-                  </v-sheet>
-            </v-list>
-            </v-fade-transition>
 
             <register-nc @registerNcSuccess="registerSuccess"></register-nc>
             <activity-report-form

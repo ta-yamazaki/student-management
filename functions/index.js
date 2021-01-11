@@ -20,6 +20,7 @@ app.use('/api/user', require('./routes/user.js'));
 app.use('/api/nc', require('./routes/nc.js'));
 app.use('/api/bs', require('./routes/bs.js'));
 app.use('/api/activity', require('./routes/activity.js'));
+app.use('/api/favorite', require('./routes/favorite.js'));
 //exports.app = functions.https.onCall(app);
 exports.app = functions.https.onRequest(app);
 
@@ -48,6 +49,7 @@ exports.registerUser = functions.auth.user().onCreate((user) => {
         var userName = authedUser.displayName;
 
         var newUser = {
+            uid: userUid,
             email: userEmail,
             name: userName
         };

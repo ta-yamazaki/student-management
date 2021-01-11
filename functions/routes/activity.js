@@ -14,8 +14,10 @@ const uuid = require('uuid');
 router.get('/list', function(req, res, next) {
     var ncId = req.query.ncId;
 
-    activityCollection.where('newcomerId', '==', ncId).get()
-    .then(function(querySnapshot) {
+    activityCollection
+    .where('newcomerId', '==', ncId)
+    .orderBy("date", "desc")
+    .get().then(function(querySnapshot) {
         var activityList = [];
         querySnapshot.forEach(function(doc) {
             activityList.push(doc.data());

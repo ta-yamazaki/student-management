@@ -312,12 +312,24 @@ Vue.component('nc-activities', {
                 attendees: "迎え",
                 comment: "comment\ncomments2",
                 next: "次回のよてい",
-                createdBy: { displayName: "ざっきー", uid: "YeOJj0RS7ggCIF02udxxZ5avReW2" },
+                createdBy: { name: "", uid: "" },
                 createdAt: "登録日時",
                 updatedAt: "更新日時",
             },
         ],
         userList: [],
+        activityTypeLabel: {
+            "器": "&ensp;器&ensp;",
+            "対話": "対話",
+            "BS": "&nbsp;BS&nbsp;",
+            "BS以外の講義": "講義",
+        },
+        activityTypeColor: {
+            "器": "orange lighten-1",
+            "対話": "green lighten-1",
+            "BS": "blue darken-2",
+            "BS以外の講義": "blue lighten-1",
+        },
         loading: true,
     }
   },
@@ -331,7 +343,6 @@ Vue.component('nc-activities', {
 
         axios.get("/api/activity/list?ncId=" + ncId).then(res => {
             this.activities = res.data;
-            this.getLecturerName(this.activities);
             this.loading = false;
         });
     },
@@ -345,55 +356,93 @@ Vue.component('nc-activities', {
             return "迎え：" + activity.attendees;
         },
         activitySubtitle(activity) {
-            if (activity.lecturer == null) return "";
+            if (activity.type == "器") return "";
             return this.lecturerWithLabel(activity) + "　" + this.attendeesWithLabel(activity);
         },
         activityTitle(activity) {
-            if(activity.type == "器") return "器 - " + activity.event;
-            if(activity.type == "対話") return "対話 - " + activity.lecture;
-            return "講義 - " + activity.lecture;
+            if(activity.type == "器") return activity.event;
+            return activity.lecture;
         },
-        getLecturerName(activities) {
-            activities.forEach(activity => {
-                var targetId = activity.lecturerId;
-                this.userList.forEach(user => {
-                    activity.lecturer = user.displayName;
-                });
+        getLecturerName(targetId) {
+            console.log(targetId);
+            this.userList.forEach(user => {
+                if (user.uid == targetId) {
+                    return user.name;
+                }
             });
+        },
+        activityDate(date) {
+            var targetDate = moment(new Date(date));
+            var today = moment(new Date());
+            if (targetDate.isSame(today, 'day')) return "今日";
+
+            var yesterday = moment(new Date()).subtract(1, 'day');
+            if (targetDate.isSame(yesterday, 'day')) return "昨日";
+
+            if (!targetDate.isSame(today, 'year')) return targetDate.format('yyyy.M.D(ddd)');
+
+            return targetDate.format('M.D(ddd)');
         },
     },
     filters: {
     },
     watch: {
+        activities (activities) {
+            activities.forEach(activity => {
+                if (!activity.lecturer == null && !activity.lecturer == "") return;
+                var targetId = activity.lecturerId;
+                this.userList.forEach(user => {
+                    if (user.uid == targetId)
+                        activity.lecturer = user.name;
+                });
+            });
+        }
     },
     template: `
         <v-list>
+            <v-skeleton-loader
+                v-show="loading"
+                type="list-item-two-line@10"
+                dense
+            ></v-skeleton-loader>
+
             <v-list-group
-              v-for="(activity, i) in activities"
-              :key="i"
-              v-model="activity.active"
-              :style="activity.active ? 'background-color:#F2F7FD;' : ''"
+                v-show="!loading"
+                v-for="(activity, i) in activities"
+                :key="i"
+                v-model="activity.active"
+                :color="activityTypeColor[activity.type]"
+                :style="activity.active ? 'background-color: whitesmoke; font-weight:bold' : ''"
             >
 
                 <template v-slot:activator three-line>
                   <v-list-item-content>
-                    <v-list-item-title v-text="activityTitle(activity)" style="font-size: 14px;" class="whiteSpaceForList"></v-list-item-title>
+                    <v-list-item-title class="whiteSpaceForList">
+                        <v-chip outlined tag="span"
+                            :color="activityTypeColor[activity.type]"
+                            style="vertical-align: middle; height: 21px; font-size: 11px;"
+                            v-html="activityTypeLabel[activity.type]"
+                            class="px-2"
+                        ></v-chip>
+                        <span style="vertical-align: middle;font-size: 14px;"
+                        >{{ activityTitle(activity) }}</span>
+                    </v-list-item-title>
                     <v-list-item-subtitle v-text="activitySubtitle(activity)" style="font-size: 10px;" class="whiteSpaceForList"></v-list-item-subtitle>
                   </v-list-item-content>
                   <v-list-item-action>
-                      <v-list-item-action-text v-text="activity.date" style="font-size: 9px;"></v-list-item-action-text>
+                      <v-list-item-action-text v-text="activityDate(activity.date)" style="font-size: 9px;"></v-list-item-action-text>
                       <v-icon></v-icon>
                   </v-list-item-action>
                 </template>
 
                     <v-divider class="mx-5"></v-divider>
-                <v-list-item class="px-5" dense>
+                <v-list-item class="px-5" dense :color="activityTypeColor[activity.type]">
                     <v-list-item-content>
                         <v-list-item-title>■コメント</v-list-item-title>
                         <v-list-item-title class="whiteSpaceForList">{{ activity.comment }}</v-list-item-title>
                         <v-list-item-title class="mt-2">■Next Action</v-list-item-title>
                         <v-list-item-title class="whiteSpaceForList">{{ activity.next }}</v-list-item-title>
-                        <v-list-item-subtitle v-text="'記入者：' + activity.createdBy.displayName" style="font-size: 10px;" class="mt-2"></v-list-item-subtitle>
+                        <v-list-item-subtitle v-text="'記入者：' + activity.createdBy.name" style="font-size: 10px;" class="mt-2"></v-list-item-subtitle>
                     </v-list-item-content>
                 </v-list-item>
 
@@ -445,7 +494,7 @@ var ncDetail = {
         },
     },
     template: `
-        <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto">
+        <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto mb-10">
 
             <v-list>
                 <v-app-bar dense fixed dark color="info">
