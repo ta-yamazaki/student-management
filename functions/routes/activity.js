@@ -7,16 +7,21 @@ const activityCollection = db.collection("activities");
 const ViewVariable = require('../model/ViewVariable.js');
 const uuid = require('uuid');
 
+const LIMIT_TO_GET = 20;
 
 /**
  * 参照系
  */
 router.get('/list', function(req, res, next) {
     var ncId = req.query.ncId;
+    var oldestDate = req.query.oldestDate;
+    if (oldestDate == null) oldestDate = dateFormat(new Date(), "yyyy-M-D");
 
     activityCollection
     .where('newcomerId', '==', ncId)
+    .where('date', '<', oldestDate)
     .orderBy("date", "desc")
+    .limit(LIMIT_TO_GET)
     .get().then(function(querySnapshot) {
         var activityList = [];
         querySnapshot.forEach(function(doc) {
@@ -29,6 +34,17 @@ router.get('/list', function(req, res, next) {
     });
 
 });
+
+function dateFormat(date, format) {
+    format = format.replace(/yyyy/, date.getFullYear());
+    format = format.replace(/MM/, zeroPad(date.getMonth() + 1));
+    format = format.replace(/DD/, zeroPad(date.getDate()));
+    return format;
+}
+
+function zeroPad(val) {
+    return ("00" + val).slice(-2);
+}
 
 router.get('/events', function(req, res, next) {
     activityCollection.where('type', '==', '器').get()

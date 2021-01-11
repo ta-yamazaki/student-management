@@ -331,6 +331,9 @@ Vue.component('nc-activities', {
             "BS以外の講義": "blue lighten-1",
         },
         loading: true,
+        limitToGet = 20;
+        moreActivityExists: true,
+        addActivitiesLoading: false,
     }
   },
     created() {
@@ -344,6 +347,7 @@ Vue.component('nc-activities', {
         axios.get("/api/activity/list?ncId=" + ncId).then(res => {
             this.activities = res.data;
             this.loading = false;
+            if (res.data.length < this.limitToGet) this.moreActivityExists = false;
         });
     },
     computed: {
@@ -364,7 +368,6 @@ Vue.component('nc-activities', {
             return activity.lecture;
         },
         getLecturerName(targetId) {
-            console.log(targetId);
             this.userList.forEach(user => {
                 if (user.uid == targetId) {
                     return user.name;
@@ -382,6 +385,21 @@ Vue.component('nc-activities', {
             if (!targetDate.isSame(today, 'year')) return targetDate.format('yyyy.M.D(ddd)');
 
             return targetDate.format('M.D(ddd)');
+        },
+        moreActivities() {
+            this.addActivitiesLoading = true;
+            var activities = [...this.activities];
+            var sorted = activities.sort((a, b) => new Date(a.date) - new Date(b.date));
+            var minDate = sorted[0].date;
+            axios.get("/api/activity/list?ncId=" + this.ncId + "&oldestDate=" + minDate).then(res => {
+                var additional = res.data;
+                if (additional.length < this.limitToGet) {
+                    this.moreActivityExists = false;
+                    return;
+                }
+                this.activities = this.activities.concat(additional);
+                this.addActivitiesLoading = false;
+            });
         },
     },
     filters: {
@@ -447,6 +465,23 @@ Vue.component('nc-activities', {
                 </v-list-item>
 
             </v-list-group>
+
+              <v-btn
+                v-show="moreActivityExists"
+                :loading="addActivitiesLoading"
+                small text block plain
+                color="primary"
+                :ripple="false"
+                class="mt-2 mb-4"
+                @click="moreActivities"
+              >もっと見る</v-btn>
+              <v-btn
+                v-show="!moreActivityExists"
+                small text block plain disabled
+                :ripple="false"
+                class="mt-2 mb-4"
+                @click="moreActivities"
+              >これ以上データがありません。</v-btn>
         </v-list>
     `
 });
@@ -494,7 +529,7 @@ var ncDetail = {
         },
     },
     template: `
-        <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto mb-10">
+        <v-flex xs12 sm12 md10 lg8 xl8 class="mx-auto mb-12">
 
             <v-list>
                 <v-app-bar dense fixed dark color="info">
