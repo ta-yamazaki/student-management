@@ -51,19 +51,19 @@ Vue.component('bs-status', {
             this.loading = true;
 
             axios.post("/api/bs/status", { ncId: this.ncId, progress: this.progress, testimony: this.testimonyDone })
-            .then(res => {
-                this.updatedAt = moment(new Date()).format('YYYY年MM月DD日 HH:mm');
-                this.$emit('updateSuccess');
-           })
-            .catch( error => { console.log(error); })
-            .finally( () => { this.loading = false; });
+                .then(res => {
+                    this.updatedAt = moment(new Date()).format('YYYY年MM月DD日 HH:mm');
+                    this.$emit('updateSuccess');
+                })
+                .catch( error => { console.log(error); })
+                .finally( () => { this.loading = false; });
         }
     },
     filters: {
     },
     watch: {
     },
-  template: `
+    template: `
       <v-card-text>
             <v-row
                 dense no-gutters
@@ -123,26 +123,26 @@ Vue.component('bs-status', {
 });
 
 Vue.component('nc-detail', {
-  data: function () {
-    return {
-        valid: false,
-        ncId: "",
-        relation: {
-            firstContact: "",
-            nurturer: "",
-            relationship: "",
-            createdAt: "",
-            updatedAt: "",
-        },
-        loading: true,
-        gradeList: ["1年", "2年", "3年", "4年", "M1", "M2", "社会人"],
-        nameRules: [
-            v => !!v || '必須入力です。',
-            v => v.length <= 20 || '20文字以下で入力してください。',
-        ],
-    }
-  },
-  props: ['profile'],
+    data: function () {
+        return {
+            valid: false,
+            ncId: "",
+            relation: {
+                firstContact: "",
+                nurturer: "",
+                relationship: "",
+                createdAt: "",
+                updatedAt: "",
+            },
+            loading: true,
+            gradeList: ["1年", "2年", "3年", "4年", "M1", "M2", "社会人"],
+            nameRules: [
+                v => !!v || '必須入力です。',
+                v => v.length <= 20 || '20文字以下で入力してください。',
+            ],
+        }
+    },
+    props: ['profile'],
     created() {
         const ncId = this.$route.query.ncId;
         this.ncId = ncId;
@@ -164,18 +164,18 @@ Vue.component('nc-detail', {
 
             this.loading = true;
             axios.post("/api/nc/update/profile", { ncId: this.ncId, profile: this.profile })
-            .then( res => {
-
-                axios.post("/api/nc/update/relation", { ncId: this.ncId, relation: this.relation })
                 .then( res => {
-                    this.relation.updatedAt = moment(new Date()).format('YYYY年MM月DD日 HH:mm');
-                    this.$emit('updateSuccess');
-                    this.formReset();
-                });
 
-            })
-            .catch( error => { console.log(error); })
-            .finally( () => { this.loading = false; });
+                    axios.post("/api/nc/update/relation", { ncId: this.ncId, relation: this.relation })
+                        .then( res => {
+                            this.relation.updatedAt = moment(new Date()).format('YYYY年MM月DD日 HH:mm');
+                            this.$emit('updateSuccess');
+                            this.formReset();
+                        });
+
+                })
+                .catch( error => { console.log(error); })
+                .finally( () => { this.loading = false; });
         },
         formReset() {
             this.$refs.form.resetValidation();
@@ -185,7 +185,7 @@ Vue.component('nc-detail', {
     },
     watch: {
     },
-  template: `
+    template: `
       <v-card-text class="mt-2">
 
         <v-form ref="form" v-model="valid"
@@ -297,45 +297,44 @@ Vue.component('nc-detail', {
 });
 
 Vue.component('nc-activities', {
-  data: function () {
-    return {
-        ncId: "",
-        activities: [
-            {
-                createdBy: "createdBy",
-                newcomerId: "newcomerId",
-                date: "2021-01-03",
-                type: "講義",
-                event: "器名",
-                lecture: "lecturelecture",
-                lecturerId: "lecturerId",
-                attendees: "迎え",
-                comment: "comment\ncomments2",
-                next: "次回のよてい",
-                createdBy: { name: "", uid: "" },
-                createdAt: "登録日時",
-                updatedAt: "更新日時",
+    data: function () {
+        return {
+            ncId: "",
+            activities: [
+                {
+                    newcomerId: "newcomerId",
+                    date: "2021-01-03",
+                    type: "講義",
+                    event: "器名",
+                    lecture: "lecturelecture",
+                    lecturerId: "lecturerId",
+                    attendees: "迎え",
+                    comment: "comment\ncomments2",
+                    next: "次回のよてい",
+                    createdBy: { name: "", uid: "" },
+                    createdAt: "登録日時",
+                    updatedAt: "更新日時",
+                },
+            ],
+            userList: [],
+            activityTypeLabel: {
+                "器": "&ensp;器&ensp;",
+                "対話": "対話",
+                "BS": "&nbsp;BS&nbsp;",
+                "BS以外の講義": "講義",
             },
-        ],
-        userList: [],
-        activityTypeLabel: {
-            "器": "&ensp;器&ensp;",
-            "対話": "対話",
-            "BS": "&nbsp;BS&nbsp;",
-            "BS以外の講義": "講義",
-        },
-        activityTypeColor: {
-            "器": "orange lighten-1",
-            "対話": "green lighten-1",
-            "BS": "blue darken-2",
-            "BS以外の講義": "blue lighten-1",
-        },
-        loading: true,
-        limitToGet = 20;
-        moreActivityExists: true,
-        addActivitiesLoading: false,
-    }
-  },
+            activityTypeColor: {
+                "器": "orange lighten-1",
+                "対話": "green lighten-1",
+                "BS": "blue darken-2",
+                "BS以外の講義": "blue lighten-1",
+            },
+            loading: true,
+            limitToGet: 20,
+            moreActivityExists: true,
+            addActivitiesLoading: false,
+        }
+    },
     created() {
         axios.get("/api/user/list").then(res => {
             this.userList = res.data;
@@ -496,15 +495,15 @@ var ncDetail = {
             pageTitle: '',
             tab: null,
             profile: {
-                  name: "",
-                  belongs: "",
-                  grade: "",
-                  interest: "",
-                  family: "",
-                  avatar: { color: "" },
+                name: "",
+                belongs: "",
+                grade: "",
+                interest: "",
+                family: "",
+                avatar: { color: "" },
             },
             updateNcSuccess: false,
-       }
+        }
     },
     created() {
         const ncId = this.$route.query.ncId;
